@@ -1,0 +1,358 @@
+/* Estilos para a página de checkout */
+
+.checkout-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.checkout-page h1 {
+  text-align: center;
+  margin-bottom: 2rem;
+  color: #333;
+}
+
+.sandbox-warning {
+  background-color: #fff3cd;
+  color: #856404;
+  padding: 1rem;
+  margin-bottom: 2rem;
+  border-radius: 0.5rem;
+  text-align: center;
+  font-weight: bold;
+}
+
+.loading-payment {
+  text-align: center;
+  margin: 2rem 0;
+}
+
+.spinner {
+  display: inline-block;
+  width: 50px;
+  height: 50px;
+  border: 5px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  border-top-color: #3498db;
+  animation: spin 1s ease-in-out infinite;
+  margin-top: 1rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.error-message {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 1rem;
+  margin-bottom: 2rem;
+  border-radius: 0.5rem;
+  text-align: center;
+}
+
+.error-message button {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  margin-top: 1rem;
+  cursor: pointer;
+}
+
+.checkout-container {
+  display: grid;
+  grid-template-columns: 1fr 350px;
+  gap: 2rem;
+}
+
+@media (max-width: 768px) {
+  .checkout-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+.checkout-form {
+  background-color: #fff;
+  border-radius: 0.5rem;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+}
+
+.checkout-section {
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #eee;
+}
+
+.checkout-section h2 {
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+  color: #333;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 0.25rem;
+  font-size: 1rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+.payment-methods {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.payment-method-option {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.payment-method-option:hover {
+  border-color: #3498db;
+}
+
+.payment-method-option input {
+  margin-right: 1rem;
+}
+
+.payment-method-label {
+  font-weight: 500;
+}
+
+.credit-card-form {
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+  background-color: #f8f9fa;
+  border-radius: 0.5rem;
+}
+
+.credit-card-form h3 {
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+
+.card-brand-info {
+  margin-top: 0.5rem;
+  color: #28a745;
+  font-weight: 500;
+}
+
+.boleto-info, .pix-info {
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+  background-color: #f8f9fa;
+  border-radius: 0.5rem;
+}
+
+.boleto-info ul, .pix-info ul {
+  margin-top: 1rem;
+  padding-left: 1.5rem;
+}
+
+.boleto-info li, .pix-info li {
+  margin-bottom: 0.5rem;
+}
+
+.checkout-button {
+  display: block;
+  width: 100%;
+  padding: 1rem;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin-top: 2rem;
+}
+
+.checkout-button:hover {
+  background-color: #218838;
+}
+
+.checkout-button:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+.checkout-button.processing {
+  position: relative;
+  color: transparent;
+}
+
+.checkout-button.processing::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 1s ease-in-out infinite;
+}
+
+.order-summary {
+  background-color: #f8f9fa;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  position: sticky;
+  top: 2rem;
+  align-self: start;
+}
+
+.order-summary h2 {
+  margin-bottom: 1.5rem;
+  font-size: 1.25rem;
+  color: #333;
+}
+
+.order-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.order-total-line {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1rem;
+  font-weight: 500;
+}
+
+.taxes {
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+.grand-total {
+  margin-top: 1.5rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #28a745;
+}
+
+.terms-agreement {
+  margin-top: 1.5rem;
+  font-size: 0.9rem;
+  color: #6c757d;
+  text-align: center;
+}
+
+.secure-payment {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: #28a745;
+  font-weight: 500;
+}
+
+/* Estilos para a página de sucesso */
+.payment-success {
+  max-width: 600px;
+  margin: 3rem auto;
+  padding: 2rem;
+  background-color: #fff;
+  border-radius: 0.5rem;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.payment-success h1 {
+  color: #28a745;
+  margin-bottom: 1.5rem;
+}
+
+.success-icon {
+  font-size: 4rem;
+  margin-bottom: 1.5rem;
+}
+
+.payment-success p {
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+
+.payment-success .btn {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  background-color: #3498db;
+  color: white;
+  text-decoration: none;
+  border-radius: 0.25rem;
+  margin-top: 1.5rem;
+  font-weight: 500;
+}
+
+.boleto-info, .pix-info {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background-color: #f8f9fa;
+  border-radius: 0.5rem;
+}
+
+.pix-qrcode {
+  margin: 1.5rem 0;
+}
+
+.pix-qrcode img {
+  max-width: 200px;
+  margin: 0 auto;
+}
+
+.pix-code {
+  margin-top: 1.5rem;
+}
+
+.pix-code textarea {
+  width: 100%;
+  padding: 0.75rem;
+  margin: 0.5rem 0;
+  border: 1px solid #ddd;
+  border-radius: 0.25rem;
+  font-family: monospace;
+  height: 80px;
+  resize: none;
+}
+
+.pix-code button {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  cursor: pointer;
+}
