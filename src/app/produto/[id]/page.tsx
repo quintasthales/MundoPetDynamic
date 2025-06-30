@@ -32,10 +32,13 @@ export default function ProductPage() {
   }
 
   const handleAddToCart = () => {
+    if (!product) {
+      console.error("Product is undefined when adding to cart.");
+      return;
+    }
     addToCart(product, quantity);
     alert(`${quantity} unidade(s) de ${product.name} adicionado(s) ao carrinho!`);
   };
-
   const handleQuantityChange = (value: number) => {
     const newQuantity = quantity + value;
     if (newQuantity >= 1 && newQuantity <= 10) {

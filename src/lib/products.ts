@@ -1,3 +1,4 @@
+
 // src/lib/products.ts - Biblioteca de produtos e funções do carrinho
 "use client";
 
@@ -245,183 +246,115 @@ export const getProductById = (id: string): Product | undefined => {
   return getAllProducts().find(product => product.id === id);
 };
 
-// Carrinho global - será inicializado apenas no cliente
-let cart: Cart = {
-  items: [],
-  subtotal: 0,
-  shipping: 0,
-  total: 0
+// Funções do carrinho
+const CART_STORAGE_KEY = 'cart';
+
+const calculateCartTotals = (items: CartItem[]): Omit<Cart, 'items'> => {
+  const subtotal = items.reduce(
+    (sum: number, item: CartItem) => sum + (item.product.price * item.quantity),
+    0
+  );
+  const shipping = subtotal > 0 ? 15.90 : 0; // Exemplo de custo de frete
+  const total = subtotal + shipping;
+  return { subtotal, shipping, total };
 };
 
-// Função para carregar o carrinho do localStorage
-const loadCartFromStorage = (): Cart => {
+export const loadCartFromStorage = (): Cart => {
   if (typeof window === 'undefined') {
     return { items: [], subtotal: 0, shipping: 0, total: 0 };
   }
-  
   try {
-    const savedCart = localStorage.getItem('cart');
-    if (!savedCart) {
-      return { items: [], subtotal: 0, shipping: 0, total: 0 };
+    const savedCart = localStorage.getItem(CART_STORAGE_KEY);
+    if (savedCart) {
+      const parsedCart = JSON.parse(savedCart);
+      // Reconstruir objetos de produto completos para garantir que os dados estejam atualizados
+      const items = parsedCart.items.map((item: any) => {
+        const product = getProductById(item.product.id);
+        return product ? { product, quantity: item.quantity } : null;
+      }).filter(Boolean);
+      return { ...calculateCartTotals(items), items };
     }
-    
-    const parsedCart = JSON.parse(savedCart);
-    
-    // Reconstruir objetos de produto completos
-    const items = parsedCart.items.map((item: any) => {
-      const product = getProductById(item.product.id);
-      return product ? { product, quantity: item.quantity } : null;
-    }).filter(Boolean);
-    
-    // Recalcular valores
-    const subtotal = items.reduce(
-      (sum: number, item: CartItem) => sum + (item.product.price * item.quantity), 
-      0
-    );
-    const shipping = subtotal > 0 ? 15.90 : 0;
-    const total = subtotal + shipping;
-    
-    return { items, subtotal, shipping, total };
-  } catch (e) {
-    console.error('Erro ao carregar carrinho:', e);
-    return { items: [], subtotal: 0, shipping: 0, total: 0 };
-  }
-};
-
-// Salvar carrinho no localStorage
-const saveCart = () => {
-  if (typeof window !== 'undefined') {
-    try {
-      localStorage.setItem('cart', JSON.stringify(cart));
-      // Disparar evento para notificar que o carrinho foi atualizado
-      window.dispatchEvent(new Event('cartUpdated'));
-    } catch (e) {
-      console.error('Erro ao salvar carrinho:', e);
-    }
-  }
-};
-
-// Inicializar carrinho - deve ser chamado em componentes do cliente
-export const initCart = () => {
-  if (typeof window !== 'undefined') {
-    cart = loadCartFromStorage();
-    return cart;
+  } catch (error) {
+    console.error('Failed to load cart from storage:', error);
   }
   return { items: [], subtotal: 0, shipping: 0, total: 0 };
 };
 
-// Obter carrinho
-export const getCart = (): Cart => {
+export const saveCart = (cart: Cart): void => {
   if (typeof window !== 'undefined') {
-    // Se estamos no cliente, sempre carregar a versão mais recente do localStorage
-    cart = loadCartFromStorage();
-  }
-  return {...cart};
-};
-
-// Adicionar ao carrinho
-export const addToCart = (product: Product, quantity: number): void => {
-  if (typeof window === 'undefined') return;
-  
-  // Garantir que o carrinho está inicializado com dados do localStorage
-  cart = loadCartFromStorage();
-  
-  const existingItemIndex = cart.items.findIndex(item => item.product.id === product.id);
-  
-  if (existingItemIndex >= 0) {
-    // Atualizar quantidade se o produto já estiver no carrinho
-    cart.items[existingItemIndex].quantity += quantity;
-  } else {
-    // Adicionar novo item ao carrinho
-    cart.items.push({ product, quantity });
-  }
-  
-  // Recalcular valores
-  cart.subtotal = cart.items.reduce(
-    (sum, item) => sum + (item.product.price * item.quantity), 
-    0
-  );
-  cart.shipping = cart.subtotal > 0 ? 15.90 : 0;
-  cart.total = cart.subtotal + cart.shipping;
-  
-  saveCart();
-  
-  // Log para debug
-  console.log('Produto adicionado ao carrinho:', product.name);
-  console.log('Carrinho atual:', cart);
-};
-
-// Atualizar quantidade de item no carrinho
-export const updateCartItemQuantity = (productId: string, change: number): void => {
-  if (typeof window === 'undefined') return;
-  
-  // Garantir que o carrinho está inicializado com dados do localStorage
-  cart = loadCartFromStorage();
-  
-  const itemIndex = cart.items.findIndex(item => item.product.id === productId);
-  
-  if (itemIndex >= 0) {
-    const newQuantity = cart.items[itemIndex].quantity + change;
-    
-    if (newQuantity <= 0) {
-      // Remover item se a quantidade for zero ou negativa
-      cart.items.splice(itemIndex, 1);
-    } else {
-      // Atualizar quantidade
-      cart.items[itemIndex].quantity = newQuantity;
+    try {
+      // Create a clean cart object without circular references
+      const cleanCart = {
+        items: cart.items.map(item => ({
+          product: {
+            id: item.product.id,
+            name: item.product.name,
+            description: item.product.description,
+            price: item.product.price,
+            originalPrice: item.product.originalPrice,
+            category: item.product.category,
+            subcategory: item.product.subcategory,
+            images: item.product.images,
+            stock: item.product.stock,
+            featured: item.product.featured,
+            features: item.product.features
+            // Exclude relatedProducts to avoid circular reference
+          },
+          quantity: item.quantity
+        })),
+        subtotal: cart.subtotal,
+        shipping: cart.shipping,
+        total: cart.total
+      };
+      
+      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cleanCart));
+      window.dispatchEvent(new Event('cartUpdated'));
+    } catch (error) {
+      console.error('Failed to save cart to storage:', error);
     }
-    
-    // Recalcular valores
-    cart.subtotal = cart.items.reduce(
-      (sum, item) => sum + (item.product.price * item.quantity), 
-      0
-    );
-    cart.shipping = cart.subtotal > 0 ? 15.90 : 0;
-    cart.total = cart.subtotal + cart.shipping;
-    
-    saveCart();
   }
 };
 
-// Remover do carrinho
+export const addToCart = (product: Product, quantity: number): void => {
+  let currentCart = loadCartFromStorage();
+  const existingItemIndex = currentCart.items.findIndex(item => item.product.id === product.id);
+
+  if (existingItemIndex >= 0) {
+    currentCart.items[existingItemIndex].quantity += quantity;
+  } else {
+    currentCart.items.push({ product, quantity });
+  }
+  saveCart({ ...currentCart, ...calculateCartTotals(currentCart.items) });
+};
+
+export const updateCartItemQuantity = (productId: string, change: number): void => {
+  let currentCart = loadCartFromStorage();
+  const itemIndex = currentCart.items.findIndex(item => item.product.id === productId);
+
+  if (itemIndex >= 0) {
+    const newQuantity = currentCart.items[itemIndex].quantity + change;
+    if (newQuantity <= 0) {
+      currentCart.items.splice(itemIndex, 1);
+    } else {
+      currentCart.items[itemIndex].quantity = newQuantity;
+    }
+    saveCart({ ...currentCart, ...calculateCartTotals(currentCart.items) });
+  }
+};
+
 export const removeFromCart = (productId: string): void => {
-  if (typeof window === 'undefined') return;
-  
-  // Garantir que o carrinho está inicializado com dados do localStorage
-  cart = loadCartFromStorage();
-  
-  cart.items = cart.items.filter(item => item.product.id !== productId);
-  
-  // Recalcular valores
-  cart.subtotal = cart.items.reduce(
-    (sum, item) => sum + (item.product.price * item.quantity), 
-    0
-  );
-  cart.shipping = cart.subtotal > 0 ? 15.90 : 0;
-  cart.total = cart.subtotal + cart.shipping;
-  
-  saveCart();
+  let currentCart = loadCartFromStorage();
+  currentCart.items = currentCart.items.filter(item => item.product.id !== productId);
+  saveCart({ ...currentCart, ...calculateCartTotals(currentCart.items) });
 };
 
-// Limpar carrinho
 export const clearCart = (): void => {
-  if (typeof window === 'undefined') return;
-  
-  cart = {
-    items: [],
-    subtotal: 0,
-    shipping: 0,
-    total: 0
-  };
-  
-  saveCart();
+  const emptyCart: Cart = { items: [], subtotal: 0, shipping: 0, total: 0 };
+  saveCart(emptyCart);
 };
 
-// Inicializar carrinho quando este módulo for carregado no cliente
-if (typeof window !== 'undefined') {
-  // Executar em um setTimeout para garantir que seja executado após a hidratação
-  setTimeout(() => {
-    initCart();
-    console.log('Carrinho inicializado:', cart);
-  }, 0);
-}
+export const getCart = (): Cart => {
+  return loadCartFromStorage();
+};
+
+

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getCart, updateCartItemQuantity, removeFromCart, initCart } from "@/lib/products";
+import { getCart, updateCartItemQuantity, removeFromCart } from "@/lib/products";
 
 export default function CartPage() {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -12,8 +12,8 @@ export default function CartPage() {
     setIsLoaded(true);
     setIsClient(true);
     
-    // Inicializar e obter o carrinho atualizado do localStorage
-    const currentCart = initCart();
+    // Obter o carrinho atualizado do localStorage
+    const currentCart = getCart();
     setCart(currentCart);
     
     // Adicionar listener para eventos de atualização do carrinho

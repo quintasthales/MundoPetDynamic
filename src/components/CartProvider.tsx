@@ -1,7 +1,7 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { getCart, Cart } from '@/lib/products';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import { loadCartFromStorage, Cart } from '@/lib/products';
 
 // Criar contexto para o carrinho
 interface CartContextType {
@@ -24,15 +24,15 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cart, setCart] = useState<Cart>({ items: [], subtotal: 0, shipping: 0, total: 0 });
   const [cartItemsCount, setCartItemsCount] = useState(0);
 
-  // Função para atualizar o carrinho
-  const refreshCart = () => {
-    const currentCart = getCart();
+  // Função para atualizar o carrinho usando useCallback para evitar re-criação
+  const refreshCart = useCallback(() => {
+    const currentCart = loadCartFromStorage();
     setCart(currentCart);
     
     // Calcular o número total de itens no carrinho
     const itemCount = currentCart.items.reduce((total, item) => total + item.quantity, 0);
     setCartItemsCount(itemCount);
-  };
+  }, []);
 
   // Atualizar o carrinho quando o componente montar
   useEffect(() => {
@@ -55,7 +55,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('cartUpdated', handleCartUpdate);
     };
-  }, []);
+  }, [refreshCart]);
 
   return (
     <CartContext.Provider value={{ cart, cartItemsCount, refreshCart }}>
@@ -63,3 +63,4 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     </CartContext.Provider>
   );
 };
+
