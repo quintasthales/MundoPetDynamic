@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useCart } from '@/components/CartProvider';
-import './checkout.css';
+
 
 // Declare PagSeguroDirectPayment for TypeScript
 declare var PagSeguroDirectPayment: any;
