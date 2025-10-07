@@ -1,5 +1,5 @@
-// /home/ubuntu/dropshipping_site_china_brasil/src/app/api/pagseguro/process-payment/route.ts
-// Endpoint para processar pagamentos (Cartão, Boleto, PIX, etc.)
+// src/app/api/pagseguro/process-payment/route.ts
+// Fixed version - Endpoint para processar pagamentos (Cartão, Boleto, PIX, etc.)
 
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -16,10 +16,25 @@ interface PaymentResponse {
   success: boolean;
   transactionCode?: string;
   status?: string;
-  paymentLink?: string;  // Adicionado para boleto
-  pixQrCode?: string;    // Adicionado para PIX
-  pixCode?: string;      // Adicionado para PIX
+  paymentLink?: string;
+  pixQrCode?: string;
+  pixCode?: string;
   error?: string;
+}
+
+interface CartItem {
+  product: {
+    id: string;
+    name: string;
+    price: number;
+  };
+  quantity: number;
+}
+
+interface Cart {
+  items: CartItem[];
+  total: number;
+  shipping: number;
 }
 
 export async function POST(req: NextRequest) {
@@ -34,19 +49,39 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { paymentMethod, cardToken, senderHash, cart, customerData, shippingData } = body;
 
-    console.log("Dados recebidos:", { paymentMethod, cardToken, senderHash, cart, customerData });
+    // SECURITY: Não logar dados sensíveis em produção
+    if (process.env.NODE_ENV === 'development') {
+      console.log("Dados recebidos:", { 
+        paymentMethod, 
+        hasCardToken: !!cardToken, 
+        hasSenderHash: !!senderHash,
+        itemCount: cart?.items?.length 
+      });
+    }
 
     // Validar dados recebidos
     if (!paymentMethod || !senderHash || !cart || !customerData) {
       return NextResponse.json({ error: 'Dados incompletos para processar pagamento.' }, { status: 400 });
     }
 
+    // Mapear método de pagamento para o formato PagSeguro
+    const paymentMethodMap: Record<string, string> = {
+      'creditCard': 'creditCard',
+      'pix': 'eft',
+      'boleto': 'boleto'
+    };
+
+    const pagseguroPaymentMethod = paymentMethodMap[paymentMethod];
+    if (!pagseguroPaymentMethod) {
+      return NextResponse.json({ error: 'Método de pagamento inválido.' }, { status: 400 });
+    }
+
     // Construir corpo da requisição para a API PagSeguro
     const paymentPayload: Record<string, any> = {
       paymentMode: 'default',
-      paymentMethod: paymentMethod === 'creditCard' ? 'creditCard' : paymentMethod === 'pix' ? 'eft' : 'boleto',
+      paymentMethod: pagseguroPaymentMethod,
       currency: 'BRL',
-      notificationURL: process.env.PAGSEGURO_NOTIFICATION_URL,
+      notificationURL: process.env.PAGSEGURO_NOTIFICATION_URL || `${process.env.NEXT_PUBLIC_BASE_URL}/api/pagseguro/notify`,
       sender: {
         name: customerData.name,
         email: customerData.email,
@@ -57,19 +92,19 @@ export async function POST(req: NextRequest) {
         documents: [
           {
             type: 'CPF',
-            value: customerData.cpf?.replace(/\D/g, '') || '00000000000',
+            value: sanitizeCPF(customerData.cpf),
           }
         ],
         hash: senderHash,
       },
-      items: cart.items.map((item: any) => ({
-        id: item.product.id,
-        description: item.product.name.substring(0, 100),
-        amount: item.product.price.toFixed(2),
+      items: cart.items.map((item: CartItem, index: number) => ({
+        id: String(index + 1),
+        description: sanitizeString(item.product.name).substring(0, 100),
+        amount: formatAmount(item.product.price),
         quantity: item.quantity,
       })),
-      reference: `PEDIDO_${new Date().getTime()}`,
-      redirectURL: process.env.PAGSEGURO_REDIRECT_URL,
+      reference: `PEDIDO_${Date.now()}`,
+      redirectURL: process.env.PAGSEGURO_REDIRECT_URL || `${process.env.NEXT_PUBLIC_BASE_URL}/payment-success`,
     };
 
     // Adicionar dados de endereço se disponíveis
@@ -77,17 +112,17 @@ export async function POST(req: NextRequest) {
       paymentPayload.shipping = {
         addressRequired: true,
         address: {
-          street: shippingData.street || 'Endereço não informado',
-          number: shippingData.number || 'S/N',
-          complement: shippingData.complement || '',
-          district: shippingData.district || 'Centro',
-          postalCode: shippingData.postalCode?.replace(/\D/g, '') || '00000000',
-          city: shippingData.city || 'São Paulo',
-          state: shippingData.state || 'SP',
+          street: sanitizeString(shippingData.street || 'Endereço não informado'),
+          number: sanitizeString(shippingData.number || 'S/N'),
+          complement: sanitizeString(shippingData.complement || ''),
+          district: sanitizeString(shippingData.district || 'Centro'),
+          postalCode: sanitizeString(shippingData.postalCode?.replace(/\D/g, '') || '00000000'),
+          city: sanitizeString(shippingData.city || 'São Paulo'),
+          state: sanitizeString(shippingData.state || 'SP'),
           country: 'BRA',
         },
         type: 3, // 3=Outro
-        cost: cart.shipping.toFixed(2),
+        cost: formatAmount(cart.shipping || 0),
       };
     }
 
@@ -101,15 +136,15 @@ export async function POST(req: NextRequest) {
         token: cardToken,
         installment: {
           quantity: 1,
-          value: cart.total.toFixed(2),
+          value: formatAmount(cart.total),
           noInterestInstallmentQuantity: 1
         },
         holder: {
-          name: customerData.cardHolderName || customerData.name,
+          name: sanitizeString(customerData.cardHolderName || customerData.name),
           documents: [
             {
               type: 'CPF',
-              value: customerData.cpf?.replace(/\D/g, '') || '00000000000',
+              value: sanitizeCPF(customerData.cpf),
             }
           ],
           birthDate: customerData.birthDate || '01/01/1990',
@@ -130,17 +165,19 @@ export async function POST(req: NextRequest) {
         }
       };
     } else if (paymentMethod === 'pix') {
-      // Configuração específica para PIX (usando eft como método)
       paymentPayload.paymentMethod = 'eft';
       paymentPayload.bankName = 'itau';
     }
 
     // Converter o payload para XML (PagSeguro V2 usa XML)
     const xmlPayload = convertToXml(paymentPayload);
-    console.log("XML Payload:", xmlPayload);
+    
+    if (process.env.NODE_ENV === 'development') {
+      console.log("XML Payload (primeiros 500 chars):", xmlPayload.substring(0, 500));
+    }
 
     // Construir URL com parâmetros de autenticação
-    const url = `${PAGSEGURO_BASE_URL}/v2/transactions?email=${PAGSEGURO_EMAIL}&token=${PAGSEGURO_TOKEN}`;
+    const url = `${PAGSEGURO_BASE_URL}/v2/transactions?email=${encodeURIComponent(PAGSEGURO_EMAIL)}&token=${encodeURIComponent(PAGSEGURO_TOKEN)}`;
     
     // Enviar requisição para o PagSeguro
     const pagseguroResponse = await fetch(url, {
@@ -153,11 +190,13 @@ export async function POST(req: NextRequest) {
     });
 
     const responseText = await pagseguroResponse.text();
-    console.log("Resposta PagSeguro:", responseText);
+    
+    if (process.env.NODE_ENV === 'development') {
+      console.log("Status da resposta PagSeguro:", pagseguroResponse.status);
+    }
 
     if (!pagseguroResponse.ok) {
-      console.error("Erro na API PagSeguro:", responseText);
-      // Extrair mensagem de erro do XML
+      console.error("Erro na API PagSeguro - Status:", pagseguroResponse.status);
       const errorMatch = responseText.match(/<message>(.*?)<\/message>/);
       const errorMessage = errorMatch ? errorMatch[1] : 'Erro ao processar pagamento no PagSeguro.';
       return NextResponse.json({ error: errorMessage }, { status: pagseguroResponse.status });
@@ -165,13 +204,7 @@ export async function POST(req: NextRequest) {
 
     // Processar resposta de sucesso
     const paymentResult: PaymentResponse = { 
-      success: true,
-      transactionCode: undefined,
-      status: undefined,
-      paymentLink: undefined,
-      pixQrCode: undefined,
-      pixCode: undefined,
-      error: undefined
+      success: true
     };
     
     // Extrair código da transação
@@ -196,9 +229,8 @@ export async function POST(req: NextRequest) {
     
     // Extrair informações de PIX (se disponível)
     if (paymentMethod === 'pix') {
-      // Nota: O formato exato da resposta para PIX pode variar
-      const pixQrCodeMatch = responseText.match(/<qrCode>(.*?)<\/qrCode>/);
-      const pixCodeMatch = responseText.match(/<code>(.*?)<\/code>/);
+      const pixQrCodeMatch = responseText.match(/<qrCode[^>]*><!\[CDATA\[(.*?)\]\]><\/qrCode>/);
+      const pixCodeMatch = responseText.match(/<emv><!\[CDATA\[(.*?)\]\]><\/emv>/);
       
       if (pixQrCodeMatch && pixQrCodeMatch[1]) {
         paymentResult.pixQrCode = pixQrCodeMatch[1];
@@ -212,9 +244,30 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(paymentResult);
 
   } catch (error: any) {
-    console.error("Erro interno no endpoint /api/pagseguro/process-payment:", error);
-    return NextResponse.json({ error: error.message || 'Erro interno no servidor.' }, { status: 500 });
+    console.error("Erro interno no endpoint /api/pagseguro/process-payment:", error.message);
+    return NextResponse.json({ 
+      error: error.message || 'Erro interno no servidor.' 
+    }, { status: 500 });
   }
+}
+
+// Funções auxiliares de sanitização
+function sanitizeString(str: string): string {
+  if (!str) return '';
+  return str
+    .replace(/[<>]/g, '') // Remove < e >
+    .replace(/&/g, '&amp;')
+    .trim();
+}
+
+function sanitizeCPF(cpf: string | undefined): string {
+  if (!cpf) return '00000000000';
+  const cleaned = cpf.replace(/\D/g, '');
+  return cleaned.length === 11 ? cleaned : '00000000000';
+}
+
+function formatAmount(amount: number): string {
+  return amount.toFixed(2);
 }
 
 // Função auxiliar para converter objeto para XML
@@ -231,11 +284,13 @@ function convertToXml(obj: Record<string, any>): string {
         // Array
         for (const item of obj) {
           // Usar tag singular para itens de array
-          const singularTag = parentTag.endsWith('s') 
-            ? parentTag.slice(0, -1) 
-            : parentTag;
+          let singularTag = parentTag;
+          if (parentTag === 'items') singularTag = 'item';
+          else if (parentTag === 'documents') singularTag = 'document';
+          else if (parentTag.endsWith('s')) singularTag = parentTag.slice(0, -1);
+          
           xmlStr += `<${singularTag}>`;
-          xmlStr += objToXml(item);
+          xmlStr += objToXml(item, singularTag);
           xmlStr += `</${singularTag}>`;
         }
       } else {
@@ -248,13 +303,26 @@ function convertToXml(obj: Record<string, any>): string {
             xmlStr += objToXml(value, key);
             xmlStr += `</${key}>`;
           } else {
-            xmlStr += `<${key}>${value}</${key}>`;
+            // Escapar caracteres especiais XML
+            const escapedValue = String(value)
+              .replace(/&/g, '&amp;')
+              .replace(/</g, '&lt;')
+              .replace(/>/g, '&gt;')
+              .replace(/"/g, '&quot;')
+              .replace(/'/g, '&apos;');
+            xmlStr += `<${key}>${escapedValue}</${key}>`;
           }
         }
       }
-    } else {
+    } else if (obj !== undefined && obj !== null) {
       // Valor primitivo
-      xmlStr += obj;
+      const escapedValue = String(obj)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&apos;');
+      xmlStr += escapedValue;
     }
     
     return xmlStr;
