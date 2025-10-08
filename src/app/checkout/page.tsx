@@ -131,19 +131,26 @@ export default function CheckoutPage() {
         }
       }
 
-      // LIMPAR CARRINHO - REMOVER REFERÊNCIAS CIRCULARES
-      const cleanCart = {
-        items: cart.map((item: any) => ({
-          product: {
-            id: item.product.id,
-            name: item.product.name,
-            price: item.product.price
-          },
-          quantity: item.quantity
-        })),
-        total: calculateTotal(),
-        shipping: 0
-      };
+   
+   // LIMPAR CARRINHO - REMOVER REFERÊNCIAS CIRCULARES
+const cartItems = Array.isArray(cart) ? cart : (cart?.items || []);
+
+if (!cartItems || cartItems.length === 0) {
+  throw new Error("Carrinho vazio. Adicione produtos antes de finalizar a compra.");
+}
+
+const cleanCart = {
+  items: cartItems.map((item: any) => ({
+    product: {
+      id: item.product.id,
+      name: item.product.name,
+      price: item.product.price
+    },
+    quantity: item.quantity
+  })),
+  total: calculateTotal(),
+  shipping: 0
+};
 
       if (paymentMethod === "creditCard") {
         const cardNumber = (document.getElementById("cardNumber") as HTMLInputElement)?.value;
