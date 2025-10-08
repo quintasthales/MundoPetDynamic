@@ -115,8 +115,8 @@ export default function CheckoutPage() {
         complement: "",
         district: "Centro",
         city: "São Paulo",
-        state: "SP",
-        postalCode: cep.replace(/\D/g, ''),
+        state: "SP",  // Será convertido para uppercase no backend
+        postalCode: cep.replace(/\D/g, ''),  // Remove tudo exceto números
       };
 
       // CORREÇÃO: Normalizar estrutura do carrinho
