@@ -131,9 +131,17 @@ export async function POST(req: NextRequest) {
     xmlPayload += '      <number>' + escapeXml(shippingData?.number || '123') + '</number>\n';
     xmlPayload += '      <complement>' + escapeXml(shippingData?.complement || '') + '</complement>\n';
     xmlPayload += '      <district>' + escapeXml(shippingData?.district || 'Centro') + '</district>\n';
-    xmlPayload += '      <postalCode>' + (shippingData?.postalCode?.replace(/\D/g, '') || '00000000') + '</postalCode>\n';
+    
+    // CORREÇÃO: CEP deve ter 8 dígitos
+    const postalCode = (shippingData?.postalCode?.replace(/\D/g, '') || '00000000').padEnd(8, '0').substring(0, 8);
+    xmlPayload += '      <postalCode>' + postalCode + '</postalCode>\n';
+    
     xmlPayload += '      <city>' + escapeXml(shippingData?.city || 'São Paulo') + '</city>\n';
-    xmlPayload += '      <state>' + (shippingData?.state || 'SP') + '</state>\n';
+    
+    // CORREÇÃO: State deve ser UPPERCASE
+    const state = (shippingData?.state || 'SP').toUpperCase();
+    xmlPayload += '      <state>' + state + '</state>\n';
+    
     xmlPayload += '      <country>BRA</country>\n';
     xmlPayload += '    </address>\n';
     xmlPayload += '    <type>3</type>\n'; // 3 = Outro
