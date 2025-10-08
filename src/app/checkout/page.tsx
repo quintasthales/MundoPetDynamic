@@ -17,7 +17,7 @@ export default function CheckoutPage() {
   const [isClient, setIsClient] = useState(false);
   const [scriptLoaded, setScriptLoaded] = useState(false);
   const [scriptError, setScriptError] = useState(false);
-  const { cart = [], refreshCart } = useCart();
+  const { cart, refreshCart } = useCart();
 
   const isSandbox = process.env.NEXT_PUBLIC_PAGSEGURO_ENV === 'sandbox';
 
@@ -131,26 +131,42 @@ export default function CheckoutPage() {
         }
       }
 
-   
-   // LIMPAR CARRINHO - REMOVER REFERÊNCIAS CIRCULARES
-const cartItems = Array.isArray(cart) ? cart : (cart?.items || []);
+      // EXTRAIR OS ITENS DO CARRINHO CORRETAMENTE
+      // O cart pode vir como { items: [...] } ou como array direto
+      let cartItems: any[] = [];
+      
+      if (Array.isArray(cart)) {
+        // Se cart é um array direto
+        cartItems = cart;
+      } else if (cart && typeof cart === 'object') {
+        // Se cart é um objeto, tentar extrair items
+        if (Array.isArray(cart.items)) {
+          cartItems = cart.items;
+        } else if (cart.items && Array.isArray(cart.items.items)) {
+          // Caso aninhado: cart.items.items
+          cartItems = cart.items.items;
+        }
+      }
 
-if (!cartItems || cartItems.length === 0) {
-  throw new Error("Carrinho vazio. Adicione produtos antes de finalizar a compra.");
-}
+      if (!cartItems || cartItems.length === 0) {
+        throw new Error("Carrinho vazio. Adicione produtos antes de finalizar a compra.");
+      }
 
-const cleanCart = {
-  items: cartItems.map((item: any) => ({
-    product: {
-      id: item.product.id,
-      name: item.product.name,
-      price: item.product.price
-    },
-    quantity: item.quantity
-  })),
-  total: calculateTotal(),
-  shipping: 0
-};
+      // LIMPAR CARRINHO - REMOVER REFERÊNCIAS CIRCULARES
+      const cleanCart = {
+        items: cartItems.map((item: any) => ({
+          product: {
+            id: item.product.id,
+            name: item.product.name,
+            price: item.product.price
+          },
+          quantity: item.quantity
+        })),
+        total: calculateTotal(),
+        shipping: 0
+      };
+
+      console.log("Enviando cleanCart:", JSON.stringify(cleanCart));
 
       if (paymentMethod === "creditCard") {
         const cardNumber = (document.getElementById("cardNumber") as HTMLInputElement)?.value;
@@ -282,8 +298,22 @@ const cleanCart = {
   };
 
   const calculateTotal = () => {
-    if (!Array.isArray(cart) || cart.length === 0) return 0;
-    return cart.reduce((total: number, item: any) => {
+    // Extrair items corretamente
+    let cartItems: any[] = [];
+    
+    if (Array.isArray(cart)) {
+      cartItems = cart;
+    } else if (cart && typeof cart === 'object') {
+      if (Array.isArray(cart.items)) {
+        cartItems = cart.items;
+      } else if (cart.items && Array.isArray(cart.items.items)) {
+        cartItems = cart.items.items;
+      }
+    }
+
+    if (!cartItems || cartItems.length === 0) return 0;
+    
+    return cartItems.reduce((total: number, item: any) => {
       return total + (item.product.price * item.quantity);
     }, 0);
   };
@@ -326,6 +356,18 @@ const cleanCart = {
         <a href="/" className="btn btn-primary">Voltar para a Loja</a>
       </div>
     );
+  }
+
+  // Extrair items para mostrar no resumo
+  let displayCartItems: any[] = [];
+  if (Array.isArray(cart)) {
+    displayCartItems = cart;
+  } else if (cart && typeof cart === 'object') {
+    if (Array.isArray(cart.items)) {
+      displayCartItems = cart.items;
+    } else if (cart.items && Array.isArray(cart.items.items)) {
+      displayCartItems = cart.items.items;
+    }
   }
 
   return (
@@ -497,9 +539,9 @@ const cleanCart = {
 
         <aside className="order-summary">
           <h2>Resumo do Pedido</h2>
-          {isClient && Array.isArray(cart) && cart.length > 0 ? (
+          {isClient && displayCartItems.length > 0 ? (
             <>
-              {cart.map((item: any) => (
+              {displayCartItems.map((item: any) => (
                 <div key={item.product.id} className="order-item">
                   <span>{item.product.name} x{item.quantity}</span>
                   <span>R$ {(item.product.price * item.quantity).toFixed(2)}</span>
