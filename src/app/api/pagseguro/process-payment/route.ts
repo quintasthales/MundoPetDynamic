@@ -18,6 +18,50 @@ interface PaymentResponse {
   error?: string;
 }
 
+// FUNÇÃO HELPER PARA EXTRAIR ITEMS DO CARRINHO MALUCO
+function extractCartItems(cart: any): any[] {
+  console.log("Extraindo items de:", JSON.stringify(cart));
+  
+  // Caso 1: cart é array direto
+  if (Array.isArray(cart)) {
+    return cart;
+  }
+  
+  // Caso 2: cart.items é array
+  if (cart && cart.items && Array.isArray(cart.items)) {
+    return cart.items;
+  }
+  
+  // Caso 3: cart.items.items é array (estrutura aninhada maluca)
+  if (cart && cart.items && cart.items.items && Array.isArray(cart.items.items)) {
+    return cart.items.items;
+  }
+  
+  // Caso 4: Tentar pegar total/shipping do lugar certo
+  // Se nada funcionou, retornar array vazio
+  return [];
+}
+
+function extractCartTotal(cart: any): number {
+  if (cart && typeof cart.total === 'number') {
+    return cart.total;
+  }
+  if (cart && cart.items && typeof cart.items.total === 'number') {
+    return cart.items.total;
+  }
+  return 0;
+}
+
+function extractCartShipping(cart: any): number {
+  if (cart && typeof cart.shipping === 'number') {
+    return cart.shipping;
+  }
+  if (cart && cart.items && typeof cart.items.shipping === 'number') {
+    return cart.items.shipping;
+  }
+  return 0;
+}
+
 export async function POST(req: NextRequest) {
   console.log("Recebida requisição para /api/pagseguro/process-payment");
   
@@ -36,12 +80,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Dados incompletos para processar pagamento.' }, { status: 400 });
     }
 
-    // VALIDAR E EXTRAIR ITEMS DO CARRINHO
-    const cartItems = cart.items || cart || [];
-    const cartTotal = cart.total || 0;
-    const cartShipping = cart.shipping || 0;
+    // EXTRAIR ITEMS USANDO A FUNÇÃO HELPER
+    const cartItems = extractCartItems(cart);
+    const cartTotal = extractCartTotal(cart) || 0;
+    const cartShipping = extractCartShipping(cart) || 0;
 
-    if (!Array.isArray(cartItems) || cartItems.length === 0) {
+    console.log("Items extraídos:", cartItems.length);
+
+    if (!cartItems || cartItems.length === 0) {
       return NextResponse.json({ error: 'Carrinho vazio ou inválido.' }, { status: 400 });
     }
 
@@ -110,11 +156,17 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Token do cartão não fornecido.' }, { status: 400 });
       }
       
+      // Calcular total se não veio
+      let finalTotal = cartTotal;
+      if (finalTotal === 0) {
+        finalTotal = cartItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
+      }
+
       paymentPayload.creditCard = {
         token: cardToken,
         installment: {
           quantity: 1,
-          value: cartTotal.toFixed(2),
+          value: finalTotal.toFixed(2),
           noInterestInstallmentQuantity: 1
         },
         holder: {
