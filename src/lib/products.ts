@@ -1,4 +1,3 @@
-
 // src/lib/products.ts - Biblioteca de produtos e funções do carrinho
 "use client";
 
@@ -220,7 +219,7 @@ export const petProducts: Product[] = [
   }
 ];
 
-// Adicionar produtos relacionados
+// Adicionar produtos relacionados SEM criar referências circulares
 healthProducts.forEach(product => {
   product.relatedProducts = healthProducts
     .filter(p => p.id !== product.id)
@@ -254,36 +253,35 @@ const calculateCartTotals = (items: CartItem[]): Omit<Cart, 'items'> => {
     (sum: number, item: CartItem) => sum + (item.product.price * item.quantity),
     0
   );
-  const shipping = subtotal > 0 ? 15.90 : 0; // Exemplo de custo de frete
+  const shipping = subtotal > 0 ? (subtotal >= 150 ? 0 : 15) : 0;
   const total = subtotal + shipping;
+
   return { subtotal, shipping, total };
 };
 
-export const loadCartFromStorage = (): Cart => {
-  if (typeof window === 'undefined') {
-    return { items: [], subtotal: 0, shipping: 0, total: 0 };
-  }
-  try {
-    const savedCart = localStorage.getItem(CART_STORAGE_KEY);
-    if (savedCart) {
-      const parsedCart = JSON.parse(savedCart);
-      // Reconstruir objetos de produto completos para garantir que os dados estejam atualizados
-      const items = parsedCart.items.map((item: any) => {
-        const product = getProductById(item.product.id);
-        return product ? { product, quantity: item.quantity } : null;
-      }).filter(Boolean);
-      return { ...calculateCartTotals(items), items };
+// CORREÇÃO: Não recarregar produtos para evitar referências circulares
+const loadCartFromStorage = (): Cart => {
+  if (typeof window !== 'undefined') {
+    try {
+      const savedCart = localStorage.getItem(CART_STORAGE_KEY);
+      if (savedCart) {
+        const parsedCart = JSON.parse(savedCart);
+        // Usar produtos já salvos SEM recarregar com getProductById
+        const items = parsedCart.items || [];
+        return { ...calculateCartTotals(items), items };
+      }
+    } catch (error) {
+      console.error('Failed to load cart from storage:', error);
     }
-  } catch (error) {
-    console.error('Failed to load cart from storage:', error);
   }
   return { items: [], subtotal: 0, shipping: 0, total: 0 };
 };
 
+// CORREÇÃO: Remover relatedProducts antes de salvar
 export const saveCart = (cart: Cart): void => {
   if (typeof window !== 'undefined') {
     try {
-      // Create a clean cart object without circular references
+      // Criar carrinho limpo SEM referências circulares
       const cleanCart = {
         items: cart.items.map(item => ({
           product: {
@@ -298,7 +296,7 @@ export const saveCart = (cart: Cart): void => {
             stock: item.product.stock,
             featured: item.product.featured,
             features: item.product.features
-            // Exclude relatedProducts to avoid circular reference
+            // NÃO incluir relatedProducts
           },
           quantity: item.quantity
         })),
@@ -322,7 +320,23 @@ export const addToCart = (product: Product, quantity: number): void => {
   if (existingItemIndex >= 0) {
     currentCart.items[existingItemIndex].quantity += quantity;
   } else {
-    currentCart.items.push({ product, quantity });
+    // Adicionar produto SEM relatedProducts
+    const cleanProduct = {
+      id: product.id,
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      originalPrice: product.originalPrice,
+      category: product.category,
+      subcategory: product.subcategory,
+      images: product.images,
+      stock: product.stock,
+      featured: product.featured,
+      features: product.features
+      // NÃO incluir relatedProducts
+    } as Product;
+    
+    currentCart.items.push({ product: cleanProduct, quantity });
   }
   saveCart({ ...currentCart, ...calculateCartTotals(currentCart.items) });
 };
@@ -356,5 +370,3 @@ export const clearCart = (): void => {
 export const getCart = (): Cart => {
   return loadCartFromStorage();
 };
-
-
