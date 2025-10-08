@@ -34,7 +34,9 @@ export async function POST(req: NextRequest) {
       paymentMethod,
       hasCardToken: !!cardToken,
       hasSenderHash: !!senderHash,
-      cartItemsCount: cart?.items?.length,
+      cartType: typeof cart,
+      isCartArray: Array.isArray(cart),
+      hasCartItems: cart?.items ? 'yes' : 'no',
       customerName: customerData?.name
     });
 
@@ -43,9 +45,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Dados incompletos para processar pagamento.' }, { status: 400 });
     }
 
-    if (!cart.items || cart.items.length === 0) {
+    // Garantir que items é um array
+    let cartItems = [];
+    if (Array.isArray(cart.items)) {
+      cartItems = cart.items;
+    } else if (Array.isArray(cart)) {
+      // Se cart for o array direto
+      cartItems = cart;
+    } else {
+      console.error("Estrutura do carrinho inválida:", cart);
+      return NextResponse.json({ error: 'Estrutura do carrinho inválida.' }, { status: 400 });
+    }
+
+    if (cartItems.length === 0) {
       return NextResponse.json({ error: 'Carrinho vazio.' }, { status: 400 });
     }
+
+    console.log("Itens do carrinho:", cartItems);
 
     // Construir XML manualmente (formato correto PagSeguro V2)
     let xmlPayload = '<?xml version="1.0" encoding="ISO-8859-1" standalone="yes"?>\n';
@@ -73,12 +89,16 @@ export async function POST(req: NextRequest) {
     
     // Itens do carrinho
     xmlPayload += '  <items>\n';
-    cart.items.forEach((item: any, index: number) => {
+    cartItems.forEach((item: any, index: number) => {
+      const product = item.product || item; // Suporta ambos os formatos
+      const quantity = item.quantity || 1;
+      const price = product.price || 0;
+      
       xmlPayload += '    <item>\n';
       xmlPayload += '      <id>' + (index + 1) + '</id>\n';
-      xmlPayload += '      <description>' + escapeXml(item.product.name.substring(0, 100)) + '</description>\n';
-      xmlPayload += '      <amount>' + item.product.price.toFixed(2) + '</amount>\n';
-      xmlPayload += '      <quantity>' + item.quantity + '</quantity>\n';
+      xmlPayload += '      <description>' + escapeXml(product.name?.substring(0, 100) || 'Produto') + '</description>\n';
+      xmlPayload += '      <amount>' + price.toFixed(2) + '</amount>\n';
+      xmlPayload += '      <quantity>' + quantity + '</quantity>\n';
       xmlPayload += '    </item>\n';
     });
     xmlPayload += '  </items>\n';
@@ -99,16 +119,31 @@ export async function POST(req: NextRequest) {
     xmlPayload += '      <country>BRA</country>\n';
     xmlPayload += '    </address>\n';
     xmlPayload += '    <type>3</type>\n'; // 3 = Outro
-    xmlPayload += '    <cost>' + (cart.shipping || 0).toFixed(2) + '</cost>\n';
+    
+    // Calcular custo do frete
+    const shippingCost = typeof cart === 'object' && cart.shipping 
+      ? cart.shipping 
+      : 0;
+    
+    xmlPayload += '    <cost>' + shippingCost.toFixed(2) + '</cost>\n';
     xmlPayload += '  </shipping>\n';
     
     // Configurações específicas para cartão de crédito
     if (paymentMethod === 'creditCard' && cardToken) {
+      // Calcular valor total
+      const totalValue = typeof cart === 'object' && cart.total 
+        ? cart.total 
+        : cartItems.reduce((sum, item) => {
+            const price = (item.product?.price || item.price || 0);
+            const qty = item.quantity || 1;
+            return sum + (price * qty);
+          }, 0);
+      
       xmlPayload += '  <creditCard>\n';
       xmlPayload += '    <token>' + cardToken + '</token>\n';
       xmlPayload += '    <installment>\n';
       xmlPayload += '      <quantity>1</quantity>\n';
-      xmlPayload += '      <value>' + cart.total.toFixed(2) + '</value>\n';
+      xmlPayload += '      <value>' + totalValue.toFixed(2) + '</value>\n';
       xmlPayload += '    </installment>\n';
       xmlPayload += '    <holder>\n';
       xmlPayload += '      <name>' + escapeXml(customerData.cardHolderName || customerData.name) + '</name>\n';
