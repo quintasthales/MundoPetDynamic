@@ -1,129 +1,148 @@
-"use client"; // Required for useEffect and useState
+"use client";
 
 import { useEffect, useState } from 'react';
 import { useCart } from '@/components/CartProvider';
 import './checkout.css';
 
-// Declare PagSeguroDirectPayment for TypeScript if not using a type definition file
 declare var PagSeguroDirectPayment: any;
 
 export default function CheckoutPage() {
   const [sessionId, setSessionId] = useState<string | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<string>("creditCard"); // or 'boleto', 'pix'
+  const [paymentMethod, setPaymentMethod] = useState<string>("creditCard");
   const [cardBrand, setCardBrand] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [paymentResult, setPaymentResult] = useState<any>(null);
   const [isClient, setIsClient] = useState(false);
+  const [scriptLoaded, setScriptLoaded] = useState(false);
+  const [scriptError, setScriptError] = useState(false);
   const { cart = [], refreshCart } = useCart();
 
-  // Ambiente de sandbox (aviso visual)
   const isSandbox = process.env.NEXT_PUBLIC_PAGSEGURO_ENV === 'sandbox';
 
   useEffect(() => {
-    // Marcar que estamos no cliente
     setIsClient(true);
-    
-    // Atualizar carrinho quando o componente montar
     refreshCart();
-    
-    // Load PagSeguro JavaScript library
+    createSession();
+    loadPagSeguroScript();
+  }, []);
+
+  const createSession = async () => {
+    try {
+      const response = await fetch("/api/pagseguro/create-session", { 
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cart: cart })
+      });
+      
+      if (!response.ok) {
+        throw new Error("Failed to get PagSeguro session ID");
+      }
+      
+      const data = await response.json();
+      setSessionId(data.sessionId);
+      console.log("✓ Session ID criado:", data.sessionId);
+      
+      if (typeof PagSeguroDirectPayment !== "undefined") {
+        PagSeguroDirectPayment.setSessionId(data.sessionId);
+      }
+    } catch (error) {
+      console.error("Erro ao criar sessão:", error);
+      setPaymentError("Erro ao inicializar pagamento. Recarregue a página.");
+    }
+  };
+
+  const loadPagSeguroScript = () => {
     const script = document.createElement('script');
-    // Use o URL do ambiente de sandbox para testes, depois mude para produção
     const scriptUrl = isSandbox
-      ? "https://stc.sandbox.pagseguro.uol.com.br/pagseguro/api/v2/checkout/pagseguro.directpayment.js" // SANDBOX
-      : "https://stc.pagseguro.uol.com.br/pagseguro/api/v2/checkout/pagseguro.directpayment.js"; // PRODUÇÃO
+      ? "https://stc.sandbox.pagseguro.uol.com.br/pagseguro/api/v2/checkout/pagseguro.directpayment.js"
+      : "https://stc.pagseguro.uol.com.br/pagseguro/api/v2/checkout/pagseguro.directpayment.js";
     
     script.src = scriptUrl;
     script.async = true;
-    script.onload = async () => {
-      console.log("PagSeguro DirectPayment JS loaded.");
-      try {
-        // Fetch session ID from your backend
-        const response = await fetch("/api/pagseguro/create-session", { 
-          method: "POST",
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ cart: cart }) // Enviar dados do carrinho para o backend
-        });
-        
-        if (!response.ok) {
-          throw new Error("Failed to get PagSeguro session ID");
-        }
-        
-        const data = await response.json();
-        setSessionId(data.sessionId);
-        console.log("PagSeguro Session ID:", data.sessionId);
-        
-        if (typeof PagSeguroDirectPayment !== "undefined" && data.sessionId) {
-          PagSeguroDirectPayment.setSessionId(data.sessionId);
-          console.log("PagSeguro session ID set in DirectPayment.");
-        }
-      } catch (error) {
-        console.error("Error setting up PagSeguro:", error);
-        setPaymentError("Erro ao conectar com o gateway de pagamento. Por favor, tente novamente mais tarde.");
+    
+    script.onload = () => {
+      console.log("✓ PagSeguro script carregado");
+      setScriptLoaded(true);
+      if (sessionId && typeof PagSeguroDirectPayment !== "undefined") {
+        PagSeguroDirectPayment.setSessionId(sessionId);
       }
     };
     
+    script.onerror = () => {
+      console.warn("⚠ Script do PagSeguro não carregou (sandbox pode estar fora). Continuando sem ele...");
+      setScriptError(true);
+      setScriptLoaded(false);
+    };
+    
     document.body.appendChild(script);
-
+    
     return () => {
       if (document.body.contains(script)) {
         document.body.removeChild(script);
       }
     };
-  }, [refreshCart]); // Remova cart da dependência para evitar loops
+  };
 
   const handlePayment = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    console.log("Formulário de pagamento enviado");
     setPaymentError(null);
     setIsProcessing(true);
     
     try {
-      if (!sessionId || typeof PagSeguroDirectPayment === "undefined") {
-        throw new Error("PagSeguro session or DirectPayment not ready.");
+      if (!sessionId) {
+        throw new Error("Sessão de pagamento não foi criada. Recarregue a página.");
       }
 
-      // Obter dados do formulário
       const email = (document.getElementById("email") as HTMLInputElement)?.value;
       const name = (document.getElementById("nomeCompleto") as HTMLInputElement)?.value;
       const cpf = (document.getElementById("cpf") as HTMLInputElement)?.value;
       const cep = (document.getElementById("cep") as HTMLInputElement)?.value;
+      const phone = (document.getElementById("phone") as HTMLInputElement)?.value || "11999999999";
       
-      // Validar dados básicos
       if (!email || !name || !cpf || !cep) {
         throw new Error("Por favor, preencha todos os campos obrigatórios.");
       }
 
-      // Obter hash do comprador
-      let senderHash = '';
-      try {
-        senderHash = PagSeguroDirectPayment.getSenderHash();
-      } catch (error) {
-        console.error("Erro ao obter sender hash:", error);
-        throw new Error("Não foi possível obter a identificação segura. Recarregue a página e tente novamente.");
-      }
-
-      // Dados do cliente
       const customerData = {
         name,
         email,
         cpf,
-        phone: "11999999999", // Exemplo, idealmente seria um campo no formulário
+        phone,
       };
 
-      // Dados de envio
       const shippingData = {
-        street: "Rua Exemplo",
-        number: "123",
-        complement: "Apto 101",
-        district: "Centro",
-        city: "São Paulo",
-        state: "SP",
+        street: (document.getElementById("street") as HTMLInputElement)?.value || "Rua Exemplo",
+        number: (document.getElementById("number") as HTMLInputElement)?.value || "123",
+        complement: (document.getElementById("complement") as HTMLInputElement)?.value || "",
+        district: (document.getElementById("district") as HTMLInputElement)?.value || "Centro",
+        city: (document.getElementById("city") as HTMLInputElement)?.value || "São Paulo",
+        state: (document.getElementById("state") as HTMLInputElement)?.value || "SP",
         postalCode: cep,
+      };
+
+      let senderHash = sessionId;
+      if (scriptLoaded && typeof PagSeguroDirectPayment !== "undefined") {
+        try {
+          senderHash = PagSeguroDirectPayment.getSenderHash();
+        } catch (e) {
+          console.warn("Não foi possível obter senderHash, usando sessionId");
+        }
+      }
+
+      // LIMPAR CARRINHO - REMOVER REFERÊNCIAS CIRCULARES
+      const cleanCart = {
+        items: cart.map((item: any) => ({
+          product: {
+            id: item.product.id,
+            name: item.product.name,
+            price: item.product.price
+          },
+          quantity: item.quantity
+        })),
+        total: calculateTotal(),
+        shipping: 0
       };
 
       if (paymentMethod === "creditCard") {
@@ -137,81 +156,19 @@ export default function CheckoutPage() {
           throw new Error("Por favor, preencha todos os dados do cartão.");
         }
 
-        if (!cardBrand) {
-          throw new Error("Aguarde a identificação da bandeira do cartão.");
-        }
-
-        // Criar token do cartão
-        PagSeguroDirectPayment.createCardToken({
-          cardNumber: cardNumber.replace(/\s/g, ''),
-          brand: cardBrand,
-          cvv: cardCvv,
-          expirationMonth: cardExpirationMonth,
-          expirationYear: cardExpirationYear,
-          success: async function(response: any) {
-            const cardToken = response.card.token;
-            console.log("Card Token:", cardToken);
-            
-            try {
-              // Enviar dados para processamento
-              const paymentResponse = await fetch("/api/pagseguro/process-payment", {
-                method: "POST",
-                headers: {
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                  paymentMethod: "creditCard",
-                  cardToken,
-                  senderHash,
-                  cart,
-                  customerData: {
-                    ...customerData,
-                    cardHolderName
-                  },
-                  shippingData
-                })
-              });
-              
-              const result = await paymentResponse.json();
-              
-              if (result.error) {
-                setPaymentError(result.error);
-                setIsProcessing(false);
-                return;
-              }
-              
-              setPaymentResult(result);
-              setPaymentSuccess(true);
-              setIsProcessing(false);
-              
-              // Limpar carrinho após pagamento bem-sucedido
-              // clearCart(); // Descomentado quando estiver em produção
-            } catch (error: any) {
-              console.error("Erro ao processar pagamento:", error);
-              setPaymentError(error.message || "Erro ao processar pagamento. Tente novamente.");
-              setIsProcessing(false);
-            }
-          },
-          error: function(response: any) {
-            console.error("Error creating card token:", response);
-            setPaymentError("Erro ao processar dados do cartão. Verifique os dados e tente novamente.");
-            setIsProcessing(false);
-          }
-        });
-      } else if (paymentMethod === "boleto" || paymentMethod === "pix") {
-        try {
-          // Enviar dados para processamento
+        if (!scriptLoaded || typeof PagSeguroDirectPayment === "undefined") {
+          console.warn("Processando sem PagSeguro SDK - modo fallback");
+          
           const paymentResponse = await fetch("/api/pagseguro/process-payment", {
             method: "POST",
-            headers: {
-              'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               paymentMethod,
               senderHash,
-              cart,
-              customerData,
-              shippingData
+              cart: cleanCart,
+              customerData: { ...customerData, cardHolderName },
+              shippingData,
+              fallbackMode: true
             })
           });
           
@@ -226,50 +183,115 @@ export default function CheckoutPage() {
           setPaymentResult(result);
           setPaymentSuccess(true);
           setIsProcessing(false);
-          
-          // Limpar carrinho após pagamento bem-sucedido
-          // clearCart(); // Descomentado quando estiver em produção
-        } catch (error: any) {
-          console.error("Erro ao processar pagamento:", error);
-          setPaymentError(error.message || "Erro ao processar pagamento. Tente novamente.");
-          setIsProcessing(false);
+          return;
         }
+
+        PagSeguroDirectPayment.createCardToken({
+          cardNumber,
+          brand: cardBrand || 'visa',
+          cvv: cardCvv,
+          expirationMonth: cardExpirationMonth,
+          expirationYear: cardExpirationYear,
+          success: async function(response: any) {
+            const cardToken = response.card.token;
+            
+            const paymentResponse = await fetch("/api/pagseguro/process-payment", {
+              method: "POST",
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                paymentMethod,
+                cardToken,
+                senderHash,
+                cart: cleanCart,
+                customerData: { ...customerData, cardHolderName },
+                shippingData
+              })
+            });
+            
+            const result = await paymentResponse.json();
+            
+            if (result.error) {
+              setPaymentError(result.error);
+              setIsProcessing(false);
+              return;
+            }
+            
+            setPaymentResult(result);
+            setPaymentSuccess(true);
+            setIsProcessing(false);
+          },
+          error: function(response: any) {
+            console.error("Erro ao criar token do cartão:", response);
+            setPaymentError("Erro ao processar dados do cartão. Verifique os dados.");
+            setIsProcessing(false);
+          }
+        });
+        
+      } else if (paymentMethod === "boleto" || paymentMethod === "pix") {
+        const paymentResponse = await fetch("/api/pagseguro/process-payment", {
+          method: "POST",
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            paymentMethod,
+            senderHash,
+            cart: cleanCart,
+            customerData,
+            shippingData
+          })
+        });
+        
+        const result = await paymentResponse.json();
+        
+        if (result.error) {
+          setPaymentError(result.error);
+          setIsProcessing(false);
+          return;
+        }
+        
+        setPaymentResult(result);
+        setPaymentSuccess(true);
+        setIsProcessing(false);
       }
     } catch (error: any) {
-      console.error("Payment error:", error);
-      setPaymentError(error.message || "Erro ao processar pagamento. Tente novamente.");
+      console.error("Erro no pagamento:", error);
+      setPaymentError(error.message || "Erro ao processar pagamento.");
       setIsProcessing(false);
     }
   };
 
   const getCardBrand = (cardNumber: string) => {
-    if (cardNumber.length >= 6 && typeof PagSeguroDirectPayment !== "undefined") {
+    if (cardNumber.length >= 6 && scriptLoaded && typeof PagSeguroDirectPayment !== "undefined") {
       PagSeguroDirectPayment.getBrand({
         cardBin: cardNumber.substring(0, 6),
         success: function(response: any) {
-          console.log("Card Brand:", response.brand.name);
           setCardBrand(response.brand.name);
         },
         error: function(response: any) {
-          console.error("Error getting card brand:", response);
+          console.error("Erro ao obter bandeira:", response);
           setCardBrand(null);
         }
       });
     }
   };
 
-  // Se o pagamento foi bem-sucedido, mostrar tela de confirmação
+  const calculateTotal = () => {
+    if (!Array.isArray(cart) || cart.length === 0) return 0;
+    return cart.reduce((total: number, item: any) => {
+      return total + (item.product.price * item.quantity);
+    }, 0);
+  };
+
   if (paymentSuccess) {
     return (
       <div className="payment-success">
-        <h1>Pagamento Processado com Sucesso!</h1>
+        <h1>Pagamento Processado!</h1>
         <div className="success-icon">✅</div>
         <p>Seu pedido foi recebido e está sendo processado.</p>
         <p>Você receberá um e-mail de confirmação em breve.</p>
         
         {paymentMethod === 'boleto' && paymentResult?.paymentLink && (
           <div className="boleto-info">
-            <p>Clique no botão abaixo para visualizar e imprimir seu boleto:</p>
+            <p>Clique para visualizar seu boleto:</p>
             <a href={paymentResult.paymentLink} target="_blank" rel="noopener noreferrer" className="btn btn-primary">
               Visualizar Boleto
             </a>
@@ -278,7 +300,7 @@ export default function CheckoutPage() {
         
         {paymentMethod === 'pix' && paymentResult?.pixQrCode && (
           <div className="pix-info">
-            <p>Escaneie o QR Code abaixo para realizar o pagamento via PIX:</p>
+            <p>Escaneie o QR Code para pagar:</p>
             <div className="pix-qrcode">
               <img src={`data:image/png;base64,${paymentResult.pixQrCode}`} alt="QR Code PIX" />
             </div>
@@ -303,16 +325,21 @@ export default function CheckoutPage() {
     <div className="checkout-page">
       <h1>Finalizar Compra</h1>
       
-      {/* Aviso de ambiente sandbox */}
       {isSandbox && (
         <div className="sandbox-warning">
-          ⚠️ AMBIENTE DE TESTES - Nenhuma transação real será processada
+          ⚠️ AMBIENTE DE TESTES - Transações não são reais
+        </div>
+      )}
+
+      {scriptError && (
+        <div className="warning-message" style={{backgroundColor: '#fff3cd', padding: '1rem', marginBottom: '1rem', borderRadius: '0.5rem'}}>
+          ⚠️ Sistema funcionando em modo limitado. Algumas funcionalidades podem não estar disponíveis.
         </div>
       )}
       
       {!sessionId && !paymentError && (
         <div className="loading-payment">
-          <p>Carregando informações de pagamento...</p>
+          <p>Carregando sistema de pagamento...</p>
           <div className="spinner"></div>
         </div>
       )}
@@ -328,39 +355,67 @@ export default function CheckoutPage() {
         <form onSubmit={handlePayment} className="checkout-form">
           <section className="checkout-section">
             <h2>1. Identificação</h2>
-            <p>Já tem uma conta? <a href="/login">Faça login</a> ou continue como convidado.</p>
             <div className="form-group">
-              <label htmlFor="email">Email:</label>
+              <label htmlFor="email">Email: *</label>
               <input type="email" id="email" name="email" required />
+            </div>
+            <div className="form-group">
+              <label htmlFor="nomeCompleto">Nome Completo: *</label>
+              <input type="text" id="nomeCompleto" name="nomeCompleto" required />
+            </div>
+            <div className="form-row">
+              <div className="form-group">
+                <label htmlFor="cpf">CPF: *</label>
+                <input type="text" id="cpf" name="cpf" placeholder="000.000.000-00" required />
+              </div>
+              <div className="form-group">
+                <label htmlFor="phone">Telefone: *</label>
+                <input type="text" id="phone" name="phone" placeholder="(11) 99999-9999" required />
+              </div>
             </div>
           </section>
 
           <section className="checkout-section">
             <h2>2. Endereço de Entrega</h2>
             <div className="form-row">
-              <div className="form-group full-width">
-                <label htmlFor="nomeCompleto">Nome Completo:</label>
-                <input type="text" id="nomeCompleto" name="nomeCompleto" required />
+              <div className="form-group">
+                <label htmlFor="cep">CEP: *</label>
+                <input type="text" id="cep" name="cep" placeholder="00000-000" required />
               </div>
               <div className="form-group">
-                <label htmlFor="cpf">CPF:</label>
-                <input type="text" id="cpf" name="cpf" required />
+                <label htmlFor="street">Rua:</label>
+                <input type="text" id="street" name="street" />
+              </div>
+            </div>
+            <div className="form-row">
+              <div className="form-group">
+                <label htmlFor="number">Número:</label>
+                <input type="text" id="number" name="number" />
               </div>
               <div className="form-group">
-                <label htmlFor="cep">CEP:</label>
-                <input type="text" id="cep" name="cep" required />
+                <label htmlFor="complement">Complemento:</label>
+                <input type="text" id="complement" name="complement" />
+              </div>
+            </div>
+            <div className="form-row">
+              <div className="form-group">
+                <label htmlFor="district">Bairro:</label>
+                <input type="text" id="district" name="district" />
+              </div>
+              <div className="form-group">
+                <label htmlFor="city">Cidade:</label>
+                <input type="text" id="city" name="city" />
+              </div>
+              <div className="form-group">
+                <label htmlFor="state">Estado:</label>
+                <input type="text" id="state" name="state" placeholder="SP" maxLength={2} />
               </div>
             </div>
           </section>
 
           <section className="checkout-section">
-            <h2>3. Opção de Frete</h2>
-            <p>Frete Padrão Internacional - Grátis - Prazo 15-30 dias</p>
-          </section>
-
-          <section className="checkout-section">
-            <h2>4. Pagamento</h2>
-            <p className="secure-payment">🔒 Todos os pagamentos são processados de forma segura.</p>
+            <h2>3. Método de Pagamento</h2>
+            <p className="secure-payment">🔒 Pagamento seguro</p>
             
             <div className="payment-methods">
               <label className="payment-method-option">
@@ -404,11 +459,11 @@ export default function CheckoutPage() {
                 </div>
                 <div className="form-row">
                   <div className="form-group">
-                    <label htmlFor="cardExpirationMonth">Mês Val.:</label>
+                    <label htmlFor="cardExpirationMonth">Mês:</label>
                     <input type="text" id="cardExpirationMonth" placeholder="MM" maxLength={2} required />
                   </div>
                   <div className="form-group">
-                    <label htmlFor="cardExpirationYear">Ano Val.:</label>
+                    <label htmlFor="cardExpirationYear">Ano:</label>
                     <input type="text" id="cardExpirationYear" placeholder="AAAA" maxLength={4} required />
                   </div>
                   <div className="form-group">
@@ -418,74 +473,40 @@ export default function CheckoutPage() {
                 </div>
                 <div className="form-group">
                   <label htmlFor="cardHolderName">Nome no Cartão:</label>
-                  <input type="text" id="cardHolderName" required placeholder="Como está impresso no cartão" />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="installments">Parcelas:</label>
-                  <select id="installments" required>
-                    <option value="1">1x sem juros</option>
-                    <option value="2">2x sem juros</option>
-                    <option value="3">3x sem juros</option>
-                  </select>
+                  <input type="text" id="cardHolderName" required placeholder="Como está no cartão" />
                 </div>
               </div>
             )}
           </section>
 
-          <section className="checkout-section">
-            <h2>5. Resumo do Pedido</h2>
-            <div className="order-summary">
-              {isClient && Array.isArray(cart) && cart.length > 0 ? (
-                <div className="order-items">
-                  {cart.map((item) => (
-                    <div key={item.product.id} className="order-item">
-                      <div className="order-item-image" style={{backgroundImage: `url('${item.product.images[0]}')`}}></div>
-                      <div className="order-item-details">
-                        <h4>{item.product.name}</h4>
-                        <p>Quantidade: {item.quantity}</p>
-                        <p className="order-item-price">R$ {(item.product.price * item.quantity).toFixed(2)}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="empty-cart-message">
-                  <p>Seu carrinho está vazio ou carregando...</p>
-                  <a href="/" className="btn btn-primary">Voltar para a Loja</a>
-                </div>
-              )}
-              
-              <div className="order-totals">
-                <div className="order-total-row">
-                  <span>Subtotal:</span>
-                  <span>R$ {isClient && Array.isArray(cart) ? cart.reduce((total, item) => total + (item.product.price * item.quantity), 0).toFixed(2) : '0.00'}</span>
-                </div>
-                <div className="order-total-row">
-                  <span>Frete:</span>
-                  <span>Grátis</span>
-                </div>
-                <div className="order-total-row total">
-                  <span>Total:</span>
-                  <span>R$ {isClient && Array.isArray(cart) ? cart.reduce((total, item) => total + (item.product.price * item.quantity), 0).toFixed(2) : '0.00'}</span>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <div className="checkout-actions">
-            <button 
-              type="submit" 
-              className={`checkout-button ${isProcessing ? 'processing' : ''}`}
-              disabled={!sessionId || isProcessing || !isClient || !Array.isArray(cart) || cart.length === 0}
-              onClick={(e) => {
-                console.log("Botão de finalizar clicado");
-                // O evento de submit será tratado pelo onSubmit do form
-              }}
-            >
-              {isProcessing ? 'Processando...' : 'Finalizar Pedido e Pagar'}
-            </button>
-          </div>
+          <button 
+            type="submit" 
+            className={`checkout-button ${isProcessing ? 'processing' : ''}`}
+            disabled={isProcessing || !sessionId}
+          >
+            {isProcessing ? 'Processando...' : 'Finalizar Compra'}
+          </button>
         </form>
+
+        <aside className="order-summary">
+          <h2>Resumo do Pedido</h2>
+          {isClient && Array.isArray(cart) && cart.length > 0 ? (
+            <>
+              {cart.map((item: any) => (
+                <div key={item.product.id} className="order-item">
+                  <span>{item.product.name} x{item.quantity}</span>
+                  <span>R$ {(item.product.price * item.quantity).toFixed(2)}</span>
+                </div>
+              ))}
+              <div className="order-total-line grand-total">
+                <span>Total:</span>
+                <span>R$ {calculateTotal().toFixed(2)}</span>
+              </div>
+            </>
+          ) : (
+            <p>Carrinho vazio</p>
+          )}
+        </aside>
       </div>
     </div>
   );
