@@ -260,7 +260,7 @@ const calculateCartTotals = (items: CartItem[]): Omit<Cart, 'items'> => {
 };
 
 // CORREÇÃO: Não recarregar produtos para evitar referências circulares
-const loadCartFromStorage = (): Cart => {
+export const loadCartFromStorage = (): Cart => {
   if (typeof window !== 'undefined') {
     try {
       const savedCart = localStorage.getItem(CART_STORAGE_KEY);
