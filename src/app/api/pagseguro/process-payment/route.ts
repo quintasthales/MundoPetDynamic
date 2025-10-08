@@ -45,15 +45,31 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Dados incompletos para processar pagamento.' }, { status: 400 });
     }
 
-    // Garantir que items é um array
+    console.log("Estrutura do carrinho recebida:", JSON.stringify(cart, null, 2));
+
+    // Normalizar estrutura do carrinho
     let cartItems = [];
-    if (Array.isArray(cart.items)) {
+    let cartTotal = 0;
+    let cartShipping = 0;
+    
+    // Caso 1: cart.items.items (estrutura duplicada)
+    if (cart.items && cart.items.items && Array.isArray(cart.items.items)) {
+      cartItems = cart.items.items;
+      cartTotal = cart.items.total || 0;
+      cartShipping = cart.items.shipping || 0;
+    }
+    // Caso 2: cart.items é array
+    else if (cart.items && Array.isArray(cart.items)) {
       cartItems = cart.items;
-    } else if (Array.isArray(cart)) {
-      // Se cart for o array direto
+      cartTotal = cart.total || 0;
+      cartShipping = cart.shipping || 0;
+    }
+    // Caso 3: cart é o array direto
+    else if (Array.isArray(cart)) {
       cartItems = cart;
-    } else {
-      console.error("Estrutura do carrinho inválida:", cart);
+    }
+    else {
+      console.error("Estrutura do carrinho não reconhecida:", cart);
       return NextResponse.json({ error: 'Estrutura do carrinho inválida.' }, { status: 400 });
     }
 
@@ -61,7 +77,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Carrinho vazio.' }, { status: 400 });
     }
 
-    console.log("Itens do carrinho:", cartItems);
+    console.log("Itens processados:", cartItems.length);
+    console.log("Total:", cartTotal);
+    console.log("Frete:", cartShipping);
 
     // Construir XML manualmente (formato correto PagSeguro V2)
     let xmlPayload = '<?xml version="1.0" encoding="ISO-8859-1" standalone="yes"?>\n';
@@ -119,25 +137,17 @@ export async function POST(req: NextRequest) {
     xmlPayload += '      <country>BRA</country>\n';
     xmlPayload += '    </address>\n';
     xmlPayload += '    <type>3</type>\n'; // 3 = Outro
-    
-    // Calcular custo do frete
-    const shippingCost = typeof cart === 'object' && cart.shipping 
-      ? cart.shipping 
-      : 0;
-    
-    xmlPayload += '    <cost>' + shippingCost.toFixed(2) + '</cost>\n';
+    xmlPayload += '    <cost>' + cartShipping.toFixed(2) + '</cost>\n';
     xmlPayload += '  </shipping>\n';
     
     // Configurações específicas para cartão de crédito
     if (paymentMethod === 'creditCard' && cardToken) {
-      // Calcular valor total
-      const totalValue = typeof cart === 'object' && cart.total 
-        ? cart.total 
-        : cartItems.reduce((sum, item) => {
-            const price = (item.product?.price || item.price || 0);
-            const qty = item.quantity || 1;
-            return sum + (price * qty);
-          }, 0);
+      // Usar valor total calculado
+      const totalValue = cartTotal > 0 ? cartTotal : cartItems.reduce((sum, item) => {
+        const price = (item.product?.price || item.price || 0);
+        const qty = item.quantity || 1;
+        return sum + (price * qty);
+      }, 0);
       
       xmlPayload += '  <creditCard>\n';
       xmlPayload += '    <token>' + cardToken + '</token>\n';
