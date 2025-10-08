@@ -18,52 +18,8 @@ interface PaymentResponse {
   error?: string;
 }
 
-// FUNÇÃO HELPER PARA EXTRAIR ITEMS DO CARRINHO MALUCO
-function extractCartItems(cart: any): any[] {
-  console.log("Extraindo items de:", JSON.stringify(cart));
-  
-  // Caso 1: cart é array direto
-  if (Array.isArray(cart)) {
-    return cart;
-  }
-  
-  // Caso 2: cart.items é array
-  if (cart && cart.items && Array.isArray(cart.items)) {
-    return cart.items;
-  }
-  
-  // Caso 3: cart.items.items é array (estrutura aninhada maluca)
-  if (cart && cart.items && cart.items.items && Array.isArray(cart.items.items)) {
-    return cart.items.items;
-  }
-  
-  // Caso 4: Tentar pegar total/shipping do lugar certo
-  // Se nada funcionou, retornar array vazio
-  return [];
-}
-
-function extractCartTotal(cart: any): number {
-  if (cart && typeof cart.total === 'number') {
-    return cart.total;
-  }
-  if (cart && cart.items && typeof cart.items.total === 'number') {
-    return cart.items.total;
-  }
-  return 0;
-}
-
-function extractCartShipping(cart: any): number {
-  if (cart && typeof cart.shipping === 'number') {
-    return cart.shipping;
-  }
-  if (cart && cart.items && typeof cart.items.shipping === 'number') {
-    return cart.items.shipping;
-  }
-  return 0;
-}
-
 export async function POST(req: NextRequest) {
-  console.log("Recebida requisição para /api/pagseguro/process-payment");
+  console.log("=== INICIANDO PROCESSO DE PAGAMENTO ===");
   
   if (!PAGSEGURO_BASE_URL || !PAGSEGURO_EMAIL || !PAGSEGURO_TOKEN) {
     console.error("Variáveis de ambiente PagSeguro não configuradas");
@@ -74,136 +30,124 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { paymentMethod, cardToken, senderHash, cart, customerData, shippingData } = body;
 
-    console.log("Dados recebidos - cart:", JSON.stringify(cart));
+    console.log("Dados recebidos:", {
+      paymentMethod,
+      hasCardToken: !!cardToken,
+      hasSenderHash: !!senderHash,
+      cartItemsCount: cart?.items?.length,
+      customerName: customerData?.name
+    });
 
+    // Validações
     if (!paymentMethod || !senderHash || !cart || !customerData) {
       return NextResponse.json({ error: 'Dados incompletos para processar pagamento.' }, { status: 400 });
     }
 
-    // EXTRAIR ITEMS USANDO A FUNÇÃO HELPER
-    const cartItems = extractCartItems(cart);
-    const cartTotal = extractCartTotal(cart) || 0;
-    const cartShipping = extractCartShipping(cart) || 0;
-
-    console.log("Items extraídos:", cartItems.length);
-
-    if (!cartItems || cartItems.length === 0) {
-      return NextResponse.json({ error: 'Carrinho vazio ou inválido.' }, { status: 400 });
+    if (!cart.items || cart.items.length === 0) {
+      return NextResponse.json({ error: 'Carrinho vazio.' }, { status: 400 });
     }
 
-    // Mapear método de pagamento
-    const paymentMethodMap: Record<string, string> = {
-      'creditCard': 'creditCard',
-      'pix': 'eft',
-      'boleto': 'boleto'
-    };
-
-    const pagseguroPaymentMethod = paymentMethodMap[paymentMethod];
-    if (!pagseguroPaymentMethod) {
-      return NextResponse.json({ error: 'Método de pagamento inválido.' }, { status: 400 });
+    // Construir XML manualmente (formato correto PagSeguro V2)
+    let xmlPayload = '<?xml version="1.0" encoding="ISO-8859-1" standalone="yes"?>\n';
+    xmlPayload += '<payment>\n';
+    xmlPayload += '  <mode>default</mode>\n';
+    xmlPayload += '  <method>' + (paymentMethod === 'creditCard' ? 'creditCard' : 'boleto') + '</method>\n';
+    xmlPayload += '  <currency>BRL</currency>\n';
+    
+    // Remetente
+    xmlPayload += '  <sender>\n';
+    xmlPayload += '    <name>' + escapeXml(customerData.name) + '</name>\n';
+    xmlPayload += '    <email>' + escapeXml(customerData.email) + '</email>\n';
+    xmlPayload += '    <phone>\n';
+    xmlPayload += '      <areaCode>' + (customerData.phone?.substring(0, 2) || '11') + '</areaCode>\n';
+    xmlPayload += '      <number>' + (customerData.phone?.substring(2) || '999999999') + '</number>\n';
+    xmlPayload += '    </phone>\n';
+    xmlPayload += '    <documents>\n';
+    xmlPayload += '      <document>\n';
+    xmlPayload += '        <type>CPF</type>\n';
+    xmlPayload += '        <value>' + (customerData.cpf?.replace(/\D/g, '') || '00000000000') + '</value>\n';
+    xmlPayload += '      </document>\n';
+    xmlPayload += '    </documents>\n';
+    xmlPayload += '    <hash>' + senderHash + '</hash>\n';
+    xmlPayload += '  </sender>\n';
+    
+    // Itens do carrinho
+    xmlPayload += '  <items>\n';
+    cart.items.forEach((item: any, index: number) => {
+      xmlPayload += '    <item>\n';
+      xmlPayload += '      <id>' + (index + 1) + '</id>\n';
+      xmlPayload += '      <description>' + escapeXml(item.product.name.substring(0, 100)) + '</description>\n';
+      xmlPayload += '      <amount>' + item.product.price.toFixed(2) + '</amount>\n';
+      xmlPayload += '      <quantity>' + item.quantity + '</quantity>\n';
+      xmlPayload += '    </item>\n';
+    });
+    xmlPayload += '  </items>\n';
+    
+    // Informações adicionais
+    xmlPayload += '  <reference>PEDIDO_' + new Date().getTime() + '</reference>\n';
+    
+    // Endereço de entrega (obrigatório)
+    xmlPayload += '  <shipping>\n';
+    xmlPayload += '    <address>\n';
+    xmlPayload += '      <street>' + escapeXml(shippingData?.street || 'Rua Exemplo') + '</street>\n';
+    xmlPayload += '      <number>' + escapeXml(shippingData?.number || '123') + '</number>\n';
+    xmlPayload += '      <complement>' + escapeXml(shippingData?.complement || '') + '</complement>\n';
+    xmlPayload += '      <district>' + escapeXml(shippingData?.district || 'Centro') + '</district>\n';
+    xmlPayload += '      <postalCode>' + (shippingData?.postalCode?.replace(/\D/g, '') || '00000000') + '</postalCode>\n';
+    xmlPayload += '      <city>' + escapeXml(shippingData?.city || 'São Paulo') + '</city>\n';
+    xmlPayload += '      <state>' + (shippingData?.state || 'SP') + '</state>\n';
+    xmlPayload += '      <country>BRA</country>\n';
+    xmlPayload += '    </address>\n';
+    xmlPayload += '    <type>3</type>\n'; // 3 = Outro
+    xmlPayload += '    <cost>' + (cart.shipping || 0).toFixed(2) + '</cost>\n';
+    xmlPayload += '  </shipping>\n';
+    
+    // Configurações específicas para cartão de crédito
+    if (paymentMethod === 'creditCard' && cardToken) {
+      xmlPayload += '  <creditCard>\n';
+      xmlPayload += '    <token>' + cardToken + '</token>\n';
+      xmlPayload += '    <installment>\n';
+      xmlPayload += '      <quantity>1</quantity>\n';
+      xmlPayload += '      <value>' + cart.total.toFixed(2) + '</value>\n';
+      xmlPayload += '    </installment>\n';
+      xmlPayload += '    <holder>\n';
+      xmlPayload += '      <name>' + escapeXml(customerData.cardHolderName || customerData.name) + '</name>\n';
+      xmlPayload += '      <documents>\n';
+      xmlPayload += '        <document>\n';
+      xmlPayload += '          <type>CPF</type>\n';
+      xmlPayload += '          <value>' + (customerData.cpf?.replace(/\D/g, '') || '00000000000') + '</value>\n';
+      xmlPayload += '        </document>\n';
+      xmlPayload += '      </documents>\n';
+      xmlPayload += '      <birthDate>' + (customerData.birthDate || '01/01/1990') + '</birthDate>\n';
+      xmlPayload += '      <phone>\n';
+      xmlPayload += '        <areaCode>' + (customerData.phone?.substring(0, 2) || '11') + '</areaCode>\n';
+      xmlPayload += '        <number>' + (customerData.phone?.substring(2) || '999999999') + '</number>\n';
+      xmlPayload += '      </phone>\n';
+      xmlPayload += '    </holder>\n';
+      xmlPayload += '    <billingAddress>\n';
+      xmlPayload += '      <street>' + escapeXml(shippingData?.street || 'Rua Exemplo') + '</street>\n';
+      xmlPayload += '      <number>' + escapeXml(shippingData?.number || '123') + '</number>\n';
+      xmlPayload += '      <complement>' + escapeXml(shippingData?.complement || '') + '</complement>\n';
+      xmlPayload += '      <district>' + escapeXml(shippingData?.district || 'Centro') + '</district>\n';
+      xmlPayload += '      <postalCode>' + (shippingData?.postalCode?.replace(/\D/g, '') || '00000000') + '</postalCode>\n';
+      xmlPayload += '      <city>' + escapeXml(shippingData?.city || 'São Paulo') + '</city>\n';
+      xmlPayload += '      <state>' + (shippingData?.state || 'SP') + '</state>\n';
+      xmlPayload += '      <country>BRA</country>\n';
+      xmlPayload += '    </billingAddress>\n';
+      xmlPayload += '  </creditCard>\n';
     }
+    
+    xmlPayload += '</payment>';
 
-    const paymentPayload: Record<string, any> = {
-      paymentMode: 'default',
-      paymentMethod: pagseguroPaymentMethod,
-      currency: 'BRL',
-      notificationURL: process.env.PAGSEGURO_NOTIFICATION_URL || `${process.env.NEXT_PUBLIC_BASE_URL}/api/pagseguro/notify`,
-      sender: {
-        name: customerData.name,
-        email: customerData.email,
-        phone: {
-          areaCode: customerData.phone?.substring(0, 2) || '11',
-          number: customerData.phone?.substring(2) || '999999999',
-        },
-        documents: [
-          {
-            type: 'CPF',
-            value: customerData.cpf?.replace(/\D/g, '') || '00000000000',
-          }
-        ],
-        hash: senderHash,
-      },
-      items: cartItems.map((item: any, index: number) => ({
-        id: String(index + 1),
-        description: (item.product?.name || 'Produto').substring(0, 100),
-        amount: (item.product?.price || 0).toFixed(2),
-        quantity: item.quantity || 1,
-      })),
-      reference: `PEDIDO_${Date.now()}`,
-      redirectURL: process.env.PAGSEGURO_REDIRECT_URL || `${process.env.NEXT_PUBLIC_BASE_URL}/payment-success`,
-    };
+    console.log("XML Payload completo:");
+    console.log(xmlPayload);
 
-    if (shippingData) {
-      paymentPayload.shipping = {
-        addressRequired: true,
-        address: {
-          street: shippingData.street || 'Endereço não informado',
-          number: shippingData.number || 'S/N',
-          complement: shippingData.complement || '',
-          district: shippingData.district || 'Centro',
-          postalCode: shippingData.postalCode?.replace(/\D/g, '') || '00000000',
-          city: shippingData.city || 'São Paulo',
-          state: shippingData.state || 'SP',
-          country: 'BRA',
-        },
-        type: 3,
-        cost: cartShipping.toFixed(2),
-      };
-    }
-
-    if (paymentMethod === 'creditCard') {
-      if (!cardToken) {
-        return NextResponse.json({ error: 'Token do cartão não fornecido.' }, { status: 400 });
-      }
-      
-      // Calcular total se não veio
-      let finalTotal = cartTotal;
-      if (finalTotal === 0) {
-        finalTotal = cartItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
-      }
-
-      paymentPayload.creditCard = {
-        token: cardToken,
-        installment: {
-          quantity: 1,
-          value: finalTotal.toFixed(2),
-          noInterestInstallmentQuantity: 1
-        },
-        holder: {
-          name: customerData.cardHolderName || customerData.name,
-          documents: [
-            {
-              type: 'CPF',
-              value: customerData.cpf?.replace(/\D/g, '') || '00000000000',
-            }
-          ],
-          birthDate: customerData.birthDate || '01/01/1990',
-          phone: {
-            areaCode: customerData.phone?.substring(0, 2) || '11',
-            number: customerData.phone?.substring(2) || '999999999',
-          }
-        },
-        billingAddress: paymentPayload.shipping?.address || {
-          street: 'Endereço não informado',
-          number: 'S/N',
-          complement: '',
-          district: 'Centro',
-          postalCode: '00000000',
-          city: 'São Paulo',
-          state: 'SP',
-          country: 'BRA',
-        }
-      };
-    } else if (paymentMethod === 'pix') {
-      paymentPayload.paymentMethod = 'eft';
-      paymentPayload.bankName = 'itau';
-    }
-
-    const xmlPayload = convertToXml(paymentPayload);
-    console.log("XML Payload (primeiros 500 chars):", xmlPayload.substring(0, 500));
-
+    // Construir URL com autenticação
     const url = `${PAGSEGURO_BASE_URL}/v2/transactions?email=${encodeURIComponent(PAGSEGURO_EMAIL)}&token=${encodeURIComponent(PAGSEGURO_TOKEN)}`;
     
+    console.log("Enviando para PagSeguro...");
+
+    // Enviar para PagSeguro
     const pagseguroResponse = await fetch(url, {
       method: 'POST',
       headers: {
@@ -214,108 +158,68 @@ export async function POST(req: NextRequest) {
     });
 
     const responseText = await pagseguroResponse.text();
-    console.log("Status PagSeguro:", pagseguroResponse.status);
+    console.log("Resposta PagSeguro (status " + pagseguroResponse.status + "):");
+    console.log(responseText);
 
     if (!pagseguroResponse.ok) {
-      console.error("Erro PagSeguro");
+      console.error("Erro na API PagSeguro");
+      
+      // Tentar extrair mensagem de erro
       const errorMatch = responseText.match(/<message>(.*?)<\/message>/);
-      const errorMessage = errorMatch ? errorMatch[1] : 'Erro ao processar pagamento no PagSeguro.';
-      return NextResponse.json({ error: errorMessage }, { status: pagseguroResponse.status });
+      const errorMessage = errorMatch ? errorMatch[1] : responseText;
+      
+      return NextResponse.json({ 
+        error: 'Erro no PagSeguro: ' + errorMessage,
+        details: responseText 
+      }, { status: pagseguroResponse.status });
     }
 
-    const paymentResult: PaymentResponse = { success: true };
+    // Processar resposta de sucesso
+    const paymentResult: PaymentResponse = { 
+      success: true
+    };
     
+    // Extrair código da transação
     const codeMatch = responseText.match(/<code>(.*?)<\/code>/);
     if (codeMatch && codeMatch[1]) {
       paymentResult.transactionCode = codeMatch[1];
     }
     
+    // Extrair status
     const statusMatch = responseText.match(/<status>(.*?)<\/status>/);
     if (statusMatch && statusMatch[1]) {
       paymentResult.status = statusMatch[1];
     }
     
+    // Extrair link de pagamento (boleto)
     if (paymentMethod === 'boleto') {
       const linkMatch = responseText.match(/<paymentLink>(.*?)<\/paymentLink>/);
       if (linkMatch && linkMatch[1]) {
         paymentResult.paymentLink = linkMatch[1];
       }
     }
-    
-    if (paymentMethod === 'pix') {
-      const pixQrCodeMatch = responseText.match(/<qrCode[^>]*><!\[CDATA\[(.*?)\]\]><\/qrCode>/);
-      const pixCodeMatch = responseText.match(/<emv><!\[CDATA\[(.*?)\]\]><\/emv>/);
-      
-      if (pixQrCodeMatch && pixQrCodeMatch[1]) {
-        paymentResult.pixQrCode = pixQrCodeMatch[1];
-      }
-      
-      if (pixCodeMatch && pixCodeMatch[1]) {
-        paymentResult.pixCode = pixCodeMatch[1];
-      }
-    }
+
+    console.log("=== PAGAMENTO PROCESSADO COM SUCESSO ===");
+    console.log("Transaction Code:", paymentResult.transactionCode);
 
     return NextResponse.json(paymentResult);
 
   } catch (error: any) {
-    console.error("Erro interno no endpoint /api/pagseguro/process-payment:", error.message);
-    return NextResponse.json({ error: error.message || 'Erro interno no servidor.' }, { status: 500 });
+    console.error("Erro interno:", error);
+    return NextResponse.json({ 
+      error: error.message || 'Erro interno no servidor.',
+      stack: error.stack 
+    }, { status: 500 });
   }
 }
 
-function convertToXml(obj: Record<string, any>): string {
-  let xml = '<?xml version="1.0" encoding="ISO-8859-1" standalone="yes"?>';
-  xml += '<payment>';
-  
-  function objToXml(obj: any, parentTag: string = ''): string {
-    let xmlStr = '';
-    
-    if (typeof obj === 'object' && obj !== null) {
-      if (Array.isArray(obj)) {
-        for (const item of obj) {
-          let singularTag = parentTag;
-          if (parentTag === 'items') singularTag = 'item';
-          else if (parentTag === 'documents') singularTag = 'document';
-          else if (parentTag.endsWith('s')) singularTag = parentTag.slice(0, -1);
-          
-          xmlStr += `<${singularTag}>`;
-          xmlStr += objToXml(item, singularTag);
-          xmlStr += `</${singularTag}>`;
-        }
-      } else {
-        for (const [key, value] of Object.entries(obj)) {
-          if (value === undefined || value === null) continue;
-          
-          if (typeof value === 'object') {
-            xmlStr += `<${key}>`;
-            xmlStr += objToXml(value, key);
-            xmlStr += `</${key}>`;
-          } else {
-            const escapedValue = String(value)
-              .replace(/&/g, '&amp;')
-              .replace(/</g, '&lt;')
-              .replace(/>/g, '&gt;')
-              .replace(/"/g, '&quot;')
-              .replace(/'/g, '&apos;');
-            xmlStr += `<${key}>${escapedValue}</${key}>`;
-          }
-        }
-      }
-    } else if (obj !== undefined && obj !== null) {
-      const escapedValue = String(obj)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&apos;');
-      xmlStr += escapedValue;
-    }
-    
-    return xmlStr;
-  }
-  
-  xml += objToXml(obj);
-  xml += '</payment>';
-  
-  return xml;
+// Função para escapar caracteres especiais no XML
+function escapeXml(unsafe: string): string {
+  if (!unsafe) return '';
+  return unsafe
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
 }
