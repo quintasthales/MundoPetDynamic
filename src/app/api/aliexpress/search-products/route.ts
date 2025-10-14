@@ -1,112 +1,45 @@
-// src/app/api/aliexpress/search-products/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 
-const APP_KEY = process.env.ALIEXPRESS_APP_KEY;
-const APP_SECRET = process.env.ALIEXPRESS_APP_SECRET;
+const APP_KEY = process.env.ALIEXPRESS_APP_KEY || '520408';
+const APP_SECRET = process.env.ALIEXPRESS_APP_SECRET || 'bJHr3TEO59B8jAdJFzLk2WP4BrHbpAAc';
 const API_URL = process.env.ALIEXPRESS_API_URL || 'https://api-sg.aliexpress.com/sync';
 
-interface AliExpressProduct {
-  product_id: string;
-  product_title: string;
-  product_main_image_url: string;
-  target_sale_price: string;
-  target_original_price: string;
-  discount: string;
-  platform_product_type: string;
-}
-
-// Generate API signature for authentication (AliExpress format)
-function generateSignature(params: Record<string, any>): string {
-  // Remove sign if exists
-  const { sign, ...paramsToSign } = params;
-  
-  // Sort keys alphabetically
-  const sortedKeys = Object.keys(paramsToSign).sort();
-  
-  // Build string: KEY1VALUE1KEY2VALUE2...
-  let signString = '';
-  for (const key of sortedKeys) {
-    signString += key + paramsToSign[key];
-  }
-  
-  // Wrap with APP_SECRET at start and end
-  const stringToSign = APP_SECRET + signString + APP_SECRET;
-  
-  console.log("String to sign:", stringToSign);
-  
-  // Generate MD5 hash and uppercase
-  const hash = crypto
-    .createHash('md5')
-    .update(stringToSign)
-    .digest('hex')
-    .toUpperCase();
-  
-  console.log("Generated signature:", hash);
-  
-  return hash;
+function generateSignature(params: Record<string, string>, secret: string): string {
+  const sortedKeys = Object.keys(params).sort();
+  const signString = sortedKeys.map(key => `${key}${params[key]}`).join('');
+  return crypto.createHmac('sha256', secret).update(signString).digest('hex').toUpperCase();
 }
 
 export async function GET(request: NextRequest) {
-  console.log("=== ALIEXPRESS SEARCH PRODUCTS ===");
-  
-  if (!APP_KEY || !APP_SECRET) {
-    console.error("AliExpress credentials not configured");
-    return NextResponse.json(
-      { error: 'AliExpress API not configured' },
-      { status: 500 }
-    );
-  }
-
   try {
-    const { searchParams } = new URL(request.url);
-    const keywords = searchParams.get('keywords') || 'pet products';
-    const category = searchParams.get('category') || '';
+    const searchParams = request.nextUrl.searchParams;
+    const query = searchParams.get('query') || 'pet products';
     const page = parseInt(searchParams.get('page') || '1');
-    const pageSize = parseInt(searchParams.get('pageSize') || '20');
 
-    console.log("Search params:", { keywords, category, page, pageSize });
-
-    // Build API parameters
     const timestamp = Date.now().toString();
-    const method = 'aliexpress.ds.recommend.feed.get';
     
     const params: Record<string, string> = {
       app_key: APP_KEY,
-      method: method,
-      timestamp: timestamp,
-      sign_method: 'md5',
+      method: 'aliexpress.affiliate.productquery',
       format: 'json',
       v: '2.0',
-      feed_name: 'ds_bestselling',
-      target_currency: 'BRL',
-      target_language: 'PT',
+      sign_method: 'sha256',
+      timestamp,
+      keywords: query,
       page_no: page.toString(),
-      page_size: pageSize.toString(),
+      page_size: '20',
+      sort: 'default',
+      target_currency: 'USD',
+      target_language: 'EN',
     };
 
-    if (keywords) {
-      params.keywords = keywords;
-    }
-
-    if (category) {
-      params.category_id = category;
-    }
-
-    // Generate signature (BEFORE adding sign to params)
-    const sign = generateSignature(params);
+    const sign = generateSignature(params, APP_SECRET);
     params.sign = sign;
 
-    // Build URL
-    const queryString = Object.keys(params)
-      .map(key => `${key}=${encodeURIComponent(params[key])}`)
-      .join('&');
-    
+    const queryString = new URLSearchParams(params).toString();
     const fullUrl = `${API_URL}?${queryString}`;
-    
-    console.log("Calling AliExpress API...");
 
-    // Call AliExpress API
     const response = await fetch(fullUrl, {
       method: 'GET',
       headers: {
@@ -114,94 +47,46 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    const data = await response.json();
-    
-    console.log("AliExpress API Response Status:", response.status);
-
     if (!response.ok) {
-      console.error("AliExpress API Error:", data);
-      return NextResponse.json(
-        { 
-          error: 'Failed to fetch products from AliExpress',
-          details: data 
-        },
-        { status: response.status }
-      );
+      throw new Error(`AliExpress API error: ${response.status}`);
     }
 
-    // Log full response to see structure
-    console.log("Full AliExpress Response:", JSON.stringify(data, null, 2));
+    const data = await response.json();
 
-    // Check for API errors
-    if (data.error_response) {
-      console.error("AliExpress Error Response:", data.error_response);
-      return NextResponse.json(
-        { 
-          error: data.error_response.msg || 'AliExpress API error',
-          code: data.error_response.code 
-        },
-        { status: 400 }
-      );
-    }
+    if (data.aliexpress_affiliate_productquery_response) {
+      const products = data.aliexpress_affiliate_productquery_response.resp_result?.result?.products?.product || [];
+      
+      const formattedProducts = products.map((product: any) => ({
+        product_id: product.product_id,
+        product_title: product.product_title,
+        product_main_image_url: product.product_main_image_url,
+        target_sale_price: product.target_sale_price,
+        target_sale_price_currency: product.target_sale_price_currency,
+        target_original_price: product.target_original_price,
+        discount: product.discount,
+        product_detail_url: product.product_detail_url,
+        sale_price: parseFloat(product.target_sale_price),
+      }));
 
-    // Try different possible response structures
-    let products = [];
-    
-    if (data.aliexpress_ds_recommend_feed_get_response?.result?.products) {
-      products = data.aliexpress_ds_recommend_feed_get_response.result.products;
-    } else if (data.result?.products) {
-      products = data.result.products;
-    } else if (data.products) {
-      products = data.products;
-    } else if (Array.isArray(data)) {
-      products = data;
-    }
-    
-    console.log(`Found ${products.length} products`);
-    console.log("First product sample:", products[0]);
-
-    // If still no products, return the raw response for debugging
-    if (!Array.isArray(products) || products.length === 0) {
-      console.error("Could not find products in response structure");
       return NextResponse.json({
-        success: false,
-        error: 'No products found',
-        debug: {
-          responseKeys: Object.keys(data),
-          fullResponse: data
-        }
+        success: true,
+        products: formattedProducts,
+        total: formattedProducts.length,
       });
     }
 
-    // Transform products to our format
-    const transformedProducts = products.map((product: AliExpressProduct) => ({
-      id: product.product_id,
-      name: product.product_title,
-      image: product.product_main_image_url,
-      price: parseFloat(product.target_sale_price || '0'),
-      originalPrice: parseFloat(product.target_original_price || '0'),
-      discount: product.discount,
-      category: 'imported',
-      source: 'aliexpress',
-      type: product.platform_product_type,
-    }));
-
     return NextResponse.json({
-      success: true,
-      products: transformedProducts,
-      total: products.length,
-      page: page,
-      pageSize: pageSize,
+      success: false,
+      products: [],
+      error: 'No products found',
     });
 
-  } catch (error: any) {
-    console.error("Error fetching AliExpress products:", error);
-    return NextResponse.json(
-      { 
-        error: error.message || 'Internal server error',
-        stack: error.stack 
-      },
-      { status: 500 }
-    );
+  } catch (error) {
+    console.error('AliExpress API Error:', error);
+    return NextResponse.json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+      products: [],
+    }, { status: 500 });
   }
 }
