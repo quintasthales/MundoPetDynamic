@@ -15,6 +15,8 @@ export default function CheckoutPage() {
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [paymentResult, setPaymentResult] = useState<any>(null);
   const [isClient, setIsClient] = useState(false);
+  const [pagseguroReady, setPagseguroReady] = useState(false);
+  const [setupError, setSetupError] = useState<string | null>(null);
   const { cart, refreshCart } = useCart();
 
   const isSandbox = process.env.NEXT_PUBLIC_PAGSEGURO_ENV === 'sandbox';
