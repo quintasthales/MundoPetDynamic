@@ -1,223 +1,243 @@
-// src/app/catalogo-aliexpress/page.tsx
-"use client";
+'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import './catalog.css';
 
-interface Product {
-  id: string;
-  name: string;
-  image: string;
-  price: number;
-  originalPrice: number;
+interface AliExpressProduct {
+  product_id: string;
+  product_title: string;
+  product_main_image_url: string;
+  target_sale_price: string;
+  target_sale_price_currency: string;
+  target_original_price: string;
   discount: string;
-  category: string;
-  source: string;
+  product_detail_url: string;
+  sale_price: number;
 }
 
-export default function AliExpressCatalogPage() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export default function AliExpressCatalog() {
+  const [products, setProducts] = useState<AliExpressProduct[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('pet products');
   const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
 
-  const fetchProducts = async (search: string = searchTerm, pageNum: number = 1) => {
+  const fetchProducts = async (search: string, pageNum: number) => {
     setLoading(true);
-    setError(null);
+    setError('');
 
     try {
-      console.log(`Fetching products: "${search}", page ${pageNum}`);
-      
       const response = await fetch(
-        `/api/aliexpress/search-products?keywords=${encodeURIComponent(search)}&page=${pageNum}&pageSize=20`
+        `/api/aliexpress/search-products?query=${encodeURIComponent(search)}&page=${pageNum}`
       );
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to fetch products');
+        throw new Error('Falha ao buscar produtos');
       }
 
       const data = await response.json();
-      console.log(`Received ${data.products.length} products`);
       
-      setProducts(data.products);
-      setPage(pageNum);
-    } catch (err: any) {
-      console.error('Error fetching products:', err);
-      setError(err.message || 'Failed to load products');
+      if (data.products && data.products.length > 0) {
+        setProducts(data.products);
+        setHasMore(data.products.length === 20);
+      } else {
+        setProducts([]);
+        setHasMore(false);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao carregar produtos');
+      setProducts([]);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchProducts();
-  }, []);
+    fetchProducts(searchTerm, page);
+  }, [page]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    setPage(1);
     fetchProducts(searchTerm, 1);
   };
 
-  const handleNextPage = () => {
-    fetchProducts(searchTerm, page + 1);
+  const handleQuickSearch = (term: string) => {
+    setSearchTerm(term);
+    setPage(1);
+    fetchProducts(term, 1);
   };
 
-  const handlePrevPage = () => {
-    if (page > 1) {
-      fetchProducts(searchTerm, page - 1);
-    }
+  const calculateBrazilianPrice = (usdPrice: number) => {
+    const exchangeRate = 5.25;
+    const markup = 1.5;
+    const shipping = 15.90;
+    
+    const priceInBRL = usdPrice * exchangeRate;
+    const finalPrice = (priceInBRL * markup) + shipping;
+    
+    return {
+      aliexpressPrice: priceInBRL.toFixed(2),
+      finalPrice: finalPrice.toFixed(2),
+      profit: ((finalPrice - priceInBRL - shipping)).toFixed(2)
+    };
   };
 
-  const calculateFinalPrice = (aliexpressPrice: number) => {
-    const markup = 1.5; // 50% profit
-    const shipping = 15.90; // Estimated shipping
-    return (aliexpressPrice * markup + shipping).toFixed(2);
+  const handleBuyNow = (productUrl: string) => {
+    window.open(productUrl, '_blank', 'noopener,noreferrer');
+  };
+
+  const handleImportProduct = async (product: AliExpressProduct) => {
+    alert(`Produto "${product.product_title}" será importado para seu catálogo!`);
   };
 
   return (
-    <div className="catalog-page">
-      <div className="container">
-        {/* Header */}
-        <div className="catalog-header">
-          <h1>🌏 Catálogo AliExpress</h1>
-          <p>Produtos importados diretamente da China</p>
+    <div className="catalog-container">
+      <div className="catalog-header">
+        <div className="nav-links">
+          <Link href="/" className="back-link">← Voltar para Home</Link>
+          <Link href="/produtos" className="nav-link">Meus Produtos</Link>
+          <Link href="/carrinho" className="nav-link">🛒 Carrinho</Link>
         </div>
+        
+        <h1>🐾 Catálogo AliExpress</h1>
+        <p>Encontre produtos para importar e revender em sua loja</p>
 
-        {/* Search Bar */}
         <form onSubmit={handleSearch} className="search-form">
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Buscar produtos..."
-            className="search-input-large"
+            placeholder="Buscar produtos... (ex: coleira, ração, brinquedo)"
+            className="search-input"
           />
-          <button type="submit" className="search-button" disabled={loading}>
+          <button type="submit" className="search-btn" disabled={loading}>
             {loading ? '🔄 Buscando...' : '🔍 Buscar'}
           </button>
         </form>
 
-        {/* Quick Filters */}
         <div className="quick-filters">
-          <button onClick={() => { setSearchTerm('pet toys'); fetchProducts('pet toys', 1); }}>
-            🐕 Brinquedos
-          </button>
-          <button onClick={() => { setSearchTerm('pet bed'); fetchProducts('pet bed', 1); }}>
-            🛏️ Camas
-          </button>
-          <button onClick={() => { setSearchTerm('pet collar'); fetchProducts('pet collar', 1); }}>
-            🦴 Coleiras
-          </button>
-          <button onClick={() => { setSearchTerm('cat feeder'); fetchProducts('cat feeder', 1); }}>
-            🍽️ Comedouros
-          </button>
-          <button onClick={() => { setSearchTerm('wellness'); fetchProducts('wellness', 1); }}>
-            🧘 Bem-Estar
-          </button>
+          <button onClick={() => handleQuickSearch('dog toys')}>🐕 Brinquedos</button>
+          <button onClick={() => handleQuickSearch('cat bed')}>🛏️ Camas</button>
+          <button onClick={() => handleQuickSearch('pet collar')}>🦴 Coleiras</button>
+          <button onClick={() => handleQuickSearch('pet food bowl')}>🍽️ Comedouros</button>
+          <button onClick={() => handleQuickSearch('pet grooming')}>✂️ Higiene</button>
+          <button onClick={() => handleQuickSearch('pet wellness')}>💊 Saúde</button>
         </div>
+      </div>
 
-        {/* Error Message */}
-        {error && (
-          <div className="error-banner">
-            <p>⚠️ {error}</p>
-            <button onClick={() => fetchProducts()}>Tentar Novamente</button>
+      {error && (
+        <div className="error-message">
+          <p>❌ {error}</p>
+          <button onClick={() => fetchProducts(searchTerm, page)}>Tentar Novamente</button>
+        </div>
+      )}
+
+      {loading && (
+        <div className="loading">
+          <div className="spinner"></div>
+          <p>Buscando produtos no AliExpress...</p>
+        </div>
+      )}
+
+      {!loading && products.length > 0 && (
+        <>
+          <div className="results-info">
+            <p>✅ Encontrados {products.length} produtos - Página {page}</p>
           </div>
-        )}
 
-        {/* Loading State */}
-        {loading && (
-          <div className="loading-state">
-            <div className="spinner-large"></div>
-            <p>Carregando produtos do AliExpress...</p>
-          </div>
-        )}
-
-        {/* Products Grid */}
-        {!loading && !error && products.length > 0 && (
-          <>
-            <div className="products-grid">
-              {products.map((product) => (
-                <div key={product.id} className="product-card-ali">
-                  <div className="product-image-wrapper">
+          <div className="products-grid">
+            {products.map((product) => {
+              const pricing = calculateBrazilianPrice(product.sale_price);
+              
+              return (
+                <div key={product.product_id} className="product-card">
+                  <div className="product-image">
                     <img 
-                      src={product.image} 
-                      alt={product.name}
-                      onError={(e) => {
-                        e.currentTarget.src = '/images/placeholder.jpg';
-                      }}
+                      src={product.product_main_image_url} 
+                      alt={product.product_title}
+                      loading="lazy"
                     />
                     {product.discount && (
-                      <span className="discount-badge">-{product.discount}</span>
+                      <span className="discount-badge">-{product.discount}%</span>
                     )}
-                    <span className="source-badge">AliExpress</span>
                   </div>
-                  
+
                   <div className="product-info">
-                    <h3 className="product-title">{product.name}</h3>
-                    
+                    <h3 className="product-title">{product.product_title}</h3>
+
                     <div className="price-section">
                       <div className="price-row">
-                        <span className="label">AliExpress:</span>
+                        <span className="price-label">AliExpress:</span>
                         <span className="aliexpress-price">
-                          ${product.price.toFixed(2)}
+                          R$ {pricing.aliexpressPrice}
                         </span>
                       </div>
-                      
+
                       <div className="price-row">
-                        <span className="label">Seu preço:</span>
-                        <span className="final-price">
-                          R$ {calculateFinalPrice(product.price)}
-                        </span>
+                        <span className="price-label">Seu Preço:</span>
+                        <span className="final-price">R$ {pricing.finalPrice}</span>
                       </div>
-                      
+
                       <div className="profit-info">
-                        💰 Lucro: ~R$ {(parseFloat(calculateFinalPrice(product.price)) - product.price * 5).toFixed(2)}
+                        💰 Lucro estimado: R$ {pricing.profit}
                       </div>
                     </div>
 
                     <div className="product-actions">
-                      <button className="btn-view">👁️ Ver Detalhes</button>
-                      <button className="btn-import">⬇️ Importar</button>
+                      <button 
+                        className="btn-buy"
+                        onClick={() => handleBuyNow(product.product_detail_url)}
+                        title="Comprar no AliExpress"
+                      >
+                        🛒 Comprar Agora
+                      </button>
+                      <button 
+                        className="btn-import"
+                        onClick={() => handleImportProduct(product)}
+                        title="Importar para meu catálogo"
+                      >
+                        📥 Importar
+                      </button>
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
+              );
+            })}
+          </div>
 
-            {/* Pagination */}
-            <div className="pagination">
-              <button 
-                onClick={handlePrevPage} 
-                disabled={page === 1}
-                className="pagination-btn"
-              >
-                ← Anterior
-              </button>
-              
-              <span className="page-info">Página {page}</span>
-              
-              <button 
-                onClick={handleNextPage}
-                className="pagination-btn"
-              >
-                Próxima →
-              </button>
-            </div>
-          </>
-        )}
-
-        {/* No Results */}
-        {!loading && !error && products.length === 0 && (
-          <div className="no-results">
-            <p>🔍 Nenhum produto encontrado para "{searchTerm}"</p>
-            <button onClick={() => { setSearchTerm('pet products'); fetchProducts('pet products', 1); }}>
-              Buscar Produtos Para Pets
+          <div className="pagination">
+            <button 
+              className="pagination-btn"
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              disabled={page === 1 || loading}
+            >
+              ← Anterior
+            </button>
+            
+            <span className="page-info">Página {page}</span>
+            
+            <button 
+              className="pagination-btn"
+              onClick={() => setPage(p => p + 1)}
+              disabled={!hasMore || loading}
+            >
+              Próxima →
             </button>
           </div>
-        )}
-      </div>
+        </>
+      )}
+
+      {!loading && products.length === 0 && !error && (
+        <div className="no-results">
+          <p>😔 Nenhum produto encontrado para "{searchTerm}"</p>
+          <button onClick={() => handleQuickSearch('pet products')}>
+            Tentar busca padrão
+          </button>
+        </div>
+      )}
     </div>
   );
 }
