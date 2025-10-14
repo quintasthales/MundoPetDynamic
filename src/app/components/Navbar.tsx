@@ -18,7 +18,6 @@ export default function Navbar() {
         <button 
           className="mobile-menu-toggle"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
-          aria-label="Toggle menu"
         >
           {isMenuOpen ? '✕' : '☰'}
         </button>
@@ -28,10 +27,10 @@ export default function Navbar() {
             🏠 Home
           </Link>
           <Link href="/produtos" onClick={() => setIsMenuOpen(false)}>
-            📦 Produtos
+            🐾 Produtos
           </Link>
-          <Link href="/catalogo-aliexpress" onClick={() => setIsMenuOpen(false)}>
-            🛍️ Importar Produtos
+          <Link href="/sobre" onClick={() => setIsMenuOpen(false)}>
+            ℹ️ Sobre
           </Link>
           <Link href="/carrinho" onClick={() => setIsMenuOpen(false)}>
             🛒 Carrinho
