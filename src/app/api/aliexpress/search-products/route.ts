@@ -129,6 +129,9 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Log full response to see structure
+    console.log("Full AliExpress Response:", JSON.stringify(data, null, 2));
+
     // Check for API errors
     if (data.error_response) {
       console.error("AliExpress Error Response:", data.error_response);
@@ -141,10 +144,34 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Extract products from response
-    const products = data.aliexpress_ds_recommend_feed_get_response?.result?.products || [];
+    // Try different possible response structures
+    let products = [];
+    
+    if (data.aliexpress_ds_recommend_feed_get_response?.result?.products) {
+      products = data.aliexpress_ds_recommend_feed_get_response.result.products;
+    } else if (data.result?.products) {
+      products = data.result.products;
+    } else if (data.products) {
+      products = data.products;
+    } else if (Array.isArray(data)) {
+      products = data;
+    }
     
     console.log(`Found ${products.length} products`);
+    console.log("First product sample:", products[0]);
+
+    // If still no products, return the raw response for debugging
+    if (!Array.isArray(products) || products.length === 0) {
+      console.error("Could not find products in response structure");
+      return NextResponse.json({
+        success: false,
+        error: 'No products found',
+        debug: {
+          responseKeys: Object.keys(data),
+          fullResponse: data
+        }
+      });
+    }
 
     // Transform products to our format
     const transformedProducts = products.map((product: AliExpressProduct) => ({
