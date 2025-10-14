@@ -23,16 +23,29 @@ export default function CheckoutPage() {
     setIsClient(true);
     refreshCart();
     
+    console.log("=== INICIANDO SETUP PAGSEGURO ===");
+    console.log("Ambiente:", isSandbox ? "SANDBOX" : "PRODUCTION");
+    
     const script = document.createElement('script');
     const scriptUrl = isSandbox
       ? "https://stc.sandbox.pagseguro.uol.com.br/pagseguro/api/v2/checkout/pagseguro.directpayment.js"
       : "https://stc.pagseguro.uol.com.br/pagseguro/api/v2/checkout/pagseguro.directpayment.js";
     
+    console.log("Carregando script do PagSeguro:", scriptUrl);
+    
     script.src = scriptUrl;
     script.async = true;
+    
+    script.onerror = (error) => {
+      console.error("❌ ERRO ao carregar script do PagSeguro:", error);
+      setPaymentError("Não foi possível carregar o sistema de pagamento. Verifique sua conexão.");
+    };
+    
     script.onload = async () => {
-      console.log("PagSeguro DirectPayment JS loaded.");
+      console.log("✅ PagSeguro DirectPayment JS loaded.");
       try {
+        console.log("Buscando session ID do backend...");
+        
         const response = await fetch("/api/pagseguro/create-session", { 
           method: "POST",
           headers: {
@@ -41,20 +54,34 @@ export default function CheckoutPage() {
           body: JSON.stringify({ cart: cart })
         });
         
+        console.log("Response status:", response.status);
+        
         if (!response.ok) {
-          throw new Error("Failed to get PagSeguro session ID");
+          const errorData = await response.json();
+          console.error("Erro ao obter session:", errorData);
+          throw new Error(errorData.error || "Failed to get PagSeguro session ID");
         }
         
         const data = await response.json();
+        console.log("✅ Session ID recebido:", data.sessionId);
         setSessionId(data.sessionId);
-        console.log("PagSeguro Session ID:", data.sessionId);
         
         if (typeof PagSeguroDirectPayment !== "undefined" && data.sessionId) {
           PagSeguroDirectPayment.setSessionId(data.sessionId);
-          console.log("PagSeguro session ID set in DirectPayment.");
+          console.log("✅ PagSeguro DirectPayment configurado com session ID");
+          
+          // TESTE: Tentar gerar sender hash imediatamente
+          try {
+            const testHash = PagSeguroDirectPayment.getSenderHash();
+            console.log("✅ Sender hash de teste gerado com sucesso:", testHash.substring(0, 20) + "...");
+          } catch (hashError) {
+            console.error("❌ ERRO ao gerar sender hash de teste:", hashError);
+          }
+        } else {
+          console.error("❌ PagSeguroDirectPayment não está definido ou session ID inválido");
         }
       } catch (error) {
-        console.error("Error setting up PagSeguro:", error);
+        console.error("❌ Error setting up PagSeguro:", error);
         setPaymentError("Erro ao conectar com o gateway de pagamento. Por favor, tente novamente mais tarde.");
       }
     };
@@ -94,9 +121,20 @@ export default function CheckoutPage() {
       // Obter hash do comprador
       let senderHash = '';
       try {
+        console.log("Gerando sender hash...");
+        console.log("Session ID atual:", sessionId);
+        console.log("PagSeguroDirectPayment disponível:", typeof PagSeguroDirectPayment !== "undefined");
+        
         senderHash = PagSeguroDirectPayment.getSenderHash();
+        
+        console.log("✅ Sender hash gerado:", senderHash.substring(0, 30) + "...");
+        
+        if (!senderHash || senderHash.length < 10) {
+          throw new Error("Sender hash gerado está vazio ou muito curto");
+        }
       } catch (error) {
-        console.error("Erro ao obter sender hash:", error);
+        console.error("❌ Erro ao obter sender hash:", error);
+        console.error("Session ID estava:", sessionId);
         throw new Error("Não foi possível obter a identificação segura. Recarregue a página e tente novamente.");
       }
 
@@ -346,8 +384,25 @@ export default function CheckoutPage() {
                 <input type="text" id="cpf" name="cpf" required defaultValue="06353226926" />
               </div>
               <div className="form-group">
-                <label htmlFor="cep">CEP:</label>
-                <input type="text" id="cep" name="cep" required defaultValue="82900000" />
+                <label htmlFor="cep">CEP (8 dígitos):</label>
+                <input 
+                  type="text" 
+                  id="cep" 
+                  name="cep" 
+                  required 
+                  defaultValue="82900000"
+                  placeholder="00000000"
+                  maxLength={9}
+                  onInput={(e) => {
+                    // Formatar CEP enquanto digita
+                    const input = e.target as HTMLInputElement;
+                    let value = input.value.replace(/\D/g, '');
+                    if (value.length > 5) {
+                      value = value.slice(0, 5) + '-' + value.slice(5, 8);
+                    }
+                    input.value = value;
+                  }}
+                />
               </div>
             </div>
           </section>
