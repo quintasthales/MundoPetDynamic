@@ -16,20 +16,33 @@ interface AliExpressProduct {
   platform_product_type: string;
 }
 
-// Generate API signature for authentication
-function generateSignature(params: Record<string, any>, method: string): string {
-  const sortedKeys = Object.keys(params).sort();
-  let signString = method;
+// Generate API signature for authentication (AliExpress format)
+function generateSignature(params: Record<string, any>): string {
+  // Remove sign if exists
+  const { sign, ...paramsToSign } = params;
   
+  // Sort keys alphabetically
+  const sortedKeys = Object.keys(paramsToSign).sort();
+  
+  // Build string: KEY1VALUE1KEY2VALUE2...
+  let signString = '';
   for (const key of sortedKeys) {
-    signString += key + params[key];
+    signString += key + paramsToSign[key];
   }
   
+  // Wrap with APP_SECRET at start and end
+  const stringToSign = APP_SECRET + signString + APP_SECRET;
+  
+  console.log("String to sign:", stringToSign);
+  
+  // Generate MD5 hash and uppercase
   const hash = crypto
-    .createHmac('sha256', APP_SECRET!)
-    .update(signString)
+    .createHash('md5')
+    .update(stringToSign)
     .digest('hex')
     .toUpperCase();
+  
+  console.log("Generated signature:", hash);
   
   return hash;
 }
@@ -62,7 +75,7 @@ export async function GET(request: NextRequest) {
       app_key: APP_KEY,
       method: method,
       timestamp: timestamp,
-      sign_method: 'sha256',
+      sign_method: 'md5',
       format: 'json',
       v: '2.0',
       feed_name: 'ds_bestselling',
@@ -80,8 +93,8 @@ export async function GET(request: NextRequest) {
       params.category_id = category;
     }
 
-    // Generate signature
-    const sign = generateSignature(params, method);
+    // Generate signature (BEFORE adding sign to params)
+    const sign = generateSignature(params);
     params.sign = sign;
 
     // Build URL
