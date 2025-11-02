@@ -89,12 +89,17 @@ export async function POST(req: NextRequest) {
     xmlPayload += '  <currency>BRL</currency>\n';
     
     // Remetente
+    // Extrair código de área e número do telefone
+    const cleanPhone = (customerData.phone || '11999999999').replace(/\D/g, '');
+    const areaCode = cleanPhone.substring(0, 2) || '11';
+    const phoneNumber = cleanPhone.substring(2) || '999999999';
+    
     xmlPayload += '  <sender>\n';
     xmlPayload += '    <name>' + escapeXml(customerData.name) + '</name>\n';
     xmlPayload += '    <email>' + escapeXml(customerData.email) + '</email>\n';
     xmlPayload += '    <phone>\n';
-    xmlPayload += '      <areaCode>' + (customerData.phone?.substring(0, 2) || '11') + '</areaCode>\n';
-    xmlPayload += '      <number>' + (customerData.phone?.substring(2) || '999999999') + '</number>\n';
+    xmlPayload += '      <areaCode>' + areaCode + '</areaCode>\n';
+    xmlPayload += '      <number>' + phoneNumber + '</number>\n';
     xmlPayload += '    </phone>\n';
     xmlPayload += '    <documents>\n';
     xmlPayload += '      <document>\n';
@@ -173,8 +178,8 @@ export async function POST(req: NextRequest) {
       xmlPayload += '      </documents>\n';
       xmlPayload += '      <birthDate>' + (customerData.birthDate || '01/01/1990') + '</birthDate>\n';
       xmlPayload += '      <phone>\n';
-      xmlPayload += '        <areaCode>' + (customerData.phone?.substring(0, 2) || '11') + '</areaCode>\n';
-      xmlPayload += '        <number>' + (customerData.phone?.substring(2) || '999999999') + '</number>\n';
+      xmlPayload += '        <areaCode>' + areaCode + '</areaCode>\n';
+      xmlPayload += '        <number>' + phoneNumber + '</number>\n';
       xmlPayload += '      </phone>\n';
       xmlPayload += '    </holder>\n';
       xmlPayload += '    <billingAddress>\n';
@@ -182,9 +187,11 @@ export async function POST(req: NextRequest) {
       xmlPayload += '      <number>' + escapeXml(shippingData?.number || '123') + '</number>\n';
       xmlPayload += '      <complement>' + escapeXml(shippingData?.complement || '') + '</complement>\n';
       xmlPayload += '      <district>' + escapeXml(shippingData?.district || 'Centro') + '</district>\n';
-      xmlPayload += '      <postalCode>' + (shippingData?.postalCode?.replace(/\D/g, '') || '00000000') + '</postalCode>\n';
+      const billingPostalCode = (shippingData?.postalCode?.replace(/\D/g, '') || '00000000').padEnd(8, '0').substring(0, 8);
+      xmlPayload += '      <postalCode>' + billingPostalCode + '</postalCode>\n';
       xmlPayload += '      <city>' + escapeXml(shippingData?.city || 'São Paulo') + '</city>\n';
-      xmlPayload += '      <state>' + (shippingData?.state || 'SP') + '</state>\n';
+      const billingState = (shippingData?.state || 'SP').toUpperCase();
+      xmlPayload += '      <state>' + billingState + '</state>\n';
       xmlPayload += '      <country>BRA</country>\n';
       xmlPayload += '    </billingAddress>\n';
       xmlPayload += '  </creditCard>\n';
