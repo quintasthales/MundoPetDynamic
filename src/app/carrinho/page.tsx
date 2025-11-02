@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useCart } from '@/components/CartProvider';
+import './checkout.css';
 
 
 // Declare PagSeguroDirectPayment for TypeScript
@@ -18,12 +19,30 @@ export default function CheckoutPage() {
   const [isClient, setIsClient] = useState(false);
   const [scriptLoaded, setScriptLoaded] = useState(false);
   const [scriptError, setScriptError] = useState(false);
-  const { cart = [], refreshCart } = useCart();
+  const { cart: contextCart = [], refreshCart } = useCart();
+  const [cart, setCart] = useState<any[]>([]);
 
   const isSandbox = process.env.NEXT_PUBLIC_PAGSEGURO_ENV === 'sandbox';
 
   useEffect(() => {
     setIsClient(true);
+    
+    // Carregar carrinho diretamente do localStorage
+    const loadCart = () => {
+      try {
+        const savedCart = localStorage.getItem('cart');
+        if (savedCart) {
+          const parsedCart = JSON.parse(savedCart);
+          console.log('Loaded cart from localStorage:', parsedCart);
+          setCart(parsedCart.items || []);
+        }
+      } catch (error) {
+        console.error('Error loading cart:', error);
+        setCart([]);
+      }
+    };
+
+    loadCart();
     refreshCart();
     
     // Criar sessão imediatamente
@@ -31,6 +50,19 @@ export default function CheckoutPage() {
     
     // Tentar carregar script do PagSeguro
     loadPagSeguroScript();
+
+    // Listener para mudanças no carrinho
+    const handleCartUpdate = () => {
+      loadCart();
+    };
+
+    window.addEventListener('cartUpdated', handleCartUpdate);
+    window.addEventListener('storage', handleCartUpdate);
+
+    return () => {
+      window.removeEventListener('cartUpdated', handleCartUpdate);
+      window.removeEventListener('storage', handleCartUpdate);
+    };
   }, []);
 
   const createSession = async () => {
@@ -163,7 +195,7 @@ export default function CheckoutPage() {
             body: JSON.stringify({
               paymentMethod,
               senderHash,
-              cart: { items: cart, total: calculateTotal(), shipping: 0 },
+              cart: { items: cart, total: calculateTotal(), shipping: calculateShipping() },
               customerData: { ...customerData, cardHolderName },
               shippingData,
               fallbackMode: true
@@ -201,7 +233,7 @@ export default function CheckoutPage() {
                 paymentMethod,
                 cardToken,
                 senderHash,
-                cart: { items: cart, total: calculateTotal(), shipping: 0 },
+                cart: { items: cart, total: calculateTotal(), shipping: calculateShipping() },
                 customerData: { ...customerData, cardHolderName },
                 shippingData
               })
@@ -233,7 +265,7 @@ export default function CheckoutPage() {
           body: JSON.stringify({
             paymentMethod,
             senderHash,
-            cart: { items: cart, total: calculateTotal(), shipping: 0 },
+            cart: { items: cart, total: calculateTotal(), shipping: calculateShipping() },
             customerData,
             shippingData
           })
@@ -273,11 +305,21 @@ export default function CheckoutPage() {
     }
   };
 
-  const calculateTotal = () => {
+  const calculateSubtotal = () => {
     if (!Array.isArray(cart) || cart.length === 0) return 0;
     return cart.reduce((total: number, item: any) => {
       return total + (item.product.price * item.quantity);
     }, 0);
+  };
+
+  const calculateShipping = () => {
+    // Frete grátis para compras acima de R$ 150
+    const subtotal = calculateSubtotal();
+    return subtotal >= 150 ? 0 : 15.90;
+  };
+
+  const calculateTotal = () => {
+    return calculateSubtotal() + calculateShipping();
   };
 
   // Tela de sucesso
@@ -498,13 +540,41 @@ export default function CheckoutPage() {
                   <span>R$ {(item.product.price * item.quantity).toFixed(2)}</span>
                 </div>
               ))}
+              
+              <div className="order-total-line subtotal">
+                <span>Subtotal:</span>
+                <span>R$ {calculateSubtotal().toFixed(2)}</span>
+              </div>
+              
+              <div className="order-total-line shipping">
+                <span>Frete:</span>
+                <span>
+                  {calculateShipping() === 0 ? (
+                    <span style={{color: '#059669'}}>Grátis</span>
+                  ) : (
+                    `R$ ${calculateShipping().toFixed(2)}`
+                  )}
+                </span>
+              </div>
+              
+              {calculateShipping() === 0 && (
+                <div style={{fontSize: '0.85rem', color: '#059669', textAlign: 'center', margin: '0.5rem 0'}}>
+                  🎉 Frete grátis para compras acima de R$ 150!
+                </div>
+              )}
+              
               <div className="order-total-line grand-total">
                 <span>Total:</span>
                 <span>R$ {calculateTotal().toFixed(2)}</span>
               </div>
             </>
           ) : (
-            <p>Carrinho vazio</p>
+            <div style={{textAlign: 'center', padding: '2rem', color: '#6b7280'}}>
+              <p>Carrinho vazio</p>
+              <a href="/" style={{color: '#3b82f6', textDecoration: 'none', fontWeight: '600'}}>
+                Continuar Comprando
+              </a>
+            </div>
           )}
         </aside>
       </div>
