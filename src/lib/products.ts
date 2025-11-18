@@ -39,7 +39,7 @@ export const healthProducts: Product[] = [
     originalPrice: 159.90,
     category: 'saude',
     subcategory: 'aromaterapia',
-    images: ['/images/difusor.jpg', '/images/difusor-2.jpg'],
+    images: ['/images/products/aromaterapia.jpg'],
     stock: 15,
     featured: true,
     features: [
@@ -57,7 +57,7 @@ export const healthProducts: Product[] = [
     price: 49.90,
     category: 'saude',
     subcategory: 'aromaterapia',
-    images: ['/images/oleo-lavanda.jpg'],
+    images: ['/images/products/aromaterapia.jpg'],
     stock: 30,
     featured: false,
     features: [
@@ -75,7 +75,7 @@ export const healthProducts: Product[] = [
     originalPrice: 179.90,
     category: 'saude',
     subcategory: 'fitness',
-    images: ['/images/tapete-yoga.jpg', '/images/tapete-yoga-2.jpg'],
+    images: ['/images/categories/saude_bem_estar.jpg'],
     stock: 10,
     featured: true,
     features: [
@@ -93,7 +93,7 @@ export const healthProducts: Product[] = [
     price: 89.90,
     category: 'saude',
     subcategory: 'meditacao',
-    images: ['/images/almofada-meditacao.jpg'],
+    images: ['/images/categories/saude_bem_estar.jpg'],
     stock: 8,
     featured: false,
     features: [
@@ -110,7 +110,7 @@ export const healthProducts: Product[] = [
     price: 79.90,
     category: 'saude',
     subcategory: 'home-office',
-    images: ['/images/suporte-notebook.jpg'],
+    images: ['/images/categories/saude_bem_estar.jpg'],
     stock: 12,
     featured: false,
     features: [
@@ -133,7 +133,7 @@ export const petProducts: Product[] = [
     originalPrice: 89.90,
     category: 'pet',
     subcategory: 'brinquedos',
-    images: ['/images/brinquedo-interativo.jpg', '/images/brinquedo-interativo-2.jpg'],
+    images: ['/images/products/pet_brinquedo.jpg'],
     stock: 20,
     featured: true,
     features: [
@@ -151,7 +151,7 @@ export const petProducts: Product[] = [
     price: 159.90,
     category: 'pet',
     subcategory: 'conforto',
-    images: ['/images/cama-pet.jpg'],
+    images: ['/images/categories/produtos_para_pets.jpg'],
     stock: 8,
     featured: true,
     features: [
@@ -169,7 +169,7 @@ export const petProducts: Product[] = [
     price: 49.90,
     category: 'pet',
     subcategory: 'acessorios',
-    images: ['/images/coleira-pet.jpg'],
+    images: ['/images/categories/produtos_para_pets.jpg'],
     stock: 25,
     featured: false,
     features: [
@@ -187,7 +187,7 @@ export const petProducts: Product[] = [
     price: 39.90,
     category: 'pet',
     subcategory: 'higiene',
-    images: ['/images/shampoo-pet.jpg'],
+    images: ['/images/categories/produtos_para_pets.jpg'],
     stock: 18,
     featured: false,
     features: [
@@ -206,7 +206,7 @@ export const petProducts: Product[] = [
     originalPrice: 149.90,
     category: 'pet',
     subcategory: 'acessorios',
-    images: ['/images/fonte-pet.jpg'],
+    images: ['/images/categories/produtos_para_pets.jpg'],
     stock: 10,
     featured: false,
     features: [
