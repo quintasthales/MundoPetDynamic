@@ -7,10 +7,26 @@ import { useCart } from "@/components/CartProvider";
 
 export default function Home() {
   const [isLoaded, setIsLoaded] = useState(false);
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [newsletterStatus, setNewsletterStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const featuredProducts = getFeaturedProducts();
   const { refreshCart } = useCart();
   
   // Função para adicionar produto ao carrinho
+  const handleNewsletterSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Simulate newsletter subscription
+    console.log('Newsletter subscription:', newsletterEmail);
+    
+    // In production, this would send to an email service API
+    setNewsletterStatus('success');
+    setNewsletterEmail('');
+    
+    // Reset message after 5 seconds
+    setTimeout(() => setNewsletterStatus('idle'), 5000);
+  };
+
   const handleAddToCart = (productId: string) => {
     const product = featuredProducts.find(p => p.id === productId);
     if (product) {
@@ -216,10 +232,23 @@ export default function Home() {
           <div className="newsletter">
             <h2>Fique por dentro das novidades</h2>
             <p>Cadastre-se para receber ofertas exclusivas, dicas de bem-estar e novidades sobre nossos produtos.</p>
-            <form className="newsletter-form">
-              <input type="email" className="newsletter-input" placeholder="Seu melhor e-mail" />
+            <form className="newsletter-form" onSubmit={handleNewsletterSubmit}>
+              <input 
+                type="email" 
+                className="newsletter-input" 
+                placeholder="Seu melhor e-mail" 
+                value={newsletterEmail}
+                onChange={(e) => setNewsletterEmail(e.target.value)}
+                required
+              />
               <button type="submit" className="newsletter-button">Inscrever-se</button>
             </form>
+            {newsletterStatus === 'success' && (
+              <p className="newsletter-message success">✓ Obrigado! Você foi inscrito com sucesso.</p>
+            )}
+            {newsletterStatus === 'error' && (
+              <p className="newsletter-message error">✗ Erro ao inscrever. Tente novamente.</p>
+            )}
           </div>
         </div>
       </section>

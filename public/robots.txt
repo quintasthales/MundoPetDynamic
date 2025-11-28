@@ -1,0 +1,11 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+
+# Disallow admin or sensitive pages
+Disallow: /api/
+Disallow: /carrinho
+Disallow: /checkout
+
+# Sitemap location
+Sitemap: https://mundopetzen.com.br/sitemap.xml

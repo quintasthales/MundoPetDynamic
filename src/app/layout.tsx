@@ -3,6 +3,7 @@ import './globals.css'
 import { Montserrat, Playfair_Display } from 'next/font/google'
 import { CartProvider } from '@/components/CartProvider'
 import CartHeader from '@/components/CartHeader'
+import SearchBar from '@/components/SearchBar'
 
 const montserrat = Montserrat({ 
   subsets: ['latin'],
@@ -18,7 +19,21 @@ const playfair = Playfair_Display({
 
 export const metadata = {
   title: 'MundoPetZen | Produtos para Pets e Bem-Estar',
-  description: 'Descubra produtos que promovem o bem-estar e a tranquilidade para você e seu companheiro animal.',
+  description: 'Loja online de produtos naturais para pets e bem-estar. Aromaterapia, yoga, brinquedos interativos e muito mais. Frete grátis acima de R$ 150. Entrega para todo Brasil.',
+  keywords: ['produtos para pets', 'bem-estar', 'aromaterapia', 'yoga', 'brinquedos para pets', 'pet shop online', 'produtos naturais'],
+  authors: [{ name: 'MundoPetZen' }],
+  openGraph: {
+    title: 'MundoPetZen | Produtos para Pets e Bem-Estar',
+    description: 'Loja online de produtos naturais para pets e bem-estar. Aromaterapia, yoga, brinquedos interativos e muito mais.',
+    url: 'https://mundopetzen.com.br',
+    siteName: 'MundoPetZen',
+    locale: 'pt_BR',
+    type: 'website',
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 }
 
 export default function RootLayout({
@@ -66,11 +81,7 @@ export default function RootLayout({
                 </ul>
                 
                 <div className="header-actions">
-                  <div className="search-bar">
-                    <span className="search-icon">🔍</span>
-                    <input type="text" className="search-input" placeholder="Buscar produtos..." />
-                  </div>
-                  
+                  <SearchBar />
                   <CartHeader />
                 </div>
               </nav>
