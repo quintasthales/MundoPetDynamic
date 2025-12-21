@@ -4,6 +4,7 @@
 import { useState, useEffect } from "react";
 import { getFeaturedProducts, addToCart } from "@/lib/products";
 import { useCart } from "@/components/CartProvider";
+import WishlistButton from "@/components/WishlistButton";
 
 export default function Home() {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -121,6 +122,9 @@ export default function Home() {
               <div key={product.id} className="product-card">
                 <div className="product-image" style={{backgroundImage: `url('${product.images[0] || '/images/products/aromaterapia.jpg'}')`}}>
                   {product.featured && <span className="product-badge">Destaque</span>}
+                  <div className="wishlist-button-container">
+                    <WishlistButton productId={product.id} size="sm" />
+                  </div>
                 </div>
                 <div className="product-content">
                   <div className="product-category">{product.category === 'saude' ? 'Saúde e Bem-Estar' : 'Produtos para Pets'}</div>

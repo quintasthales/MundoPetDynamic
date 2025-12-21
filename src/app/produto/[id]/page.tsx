@@ -5,6 +5,8 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { getProductById, addToCart } from "@/lib/products";
+import ProductReviews from "@/components/ProductReviews";
+import WishlistButton from "@/components/WishlistButton";
 
 export default function ProductPage() {
   const params = useParams();
@@ -123,6 +125,8 @@ export default function ProductPage() {
               )}
               
               <div className="product-actions">
+                <WishlistButton productId={productId} size="lg" showText={true} />
+                
                 <div className="quantity-selector">
                   <button 
                     className="quantity-btn" 
@@ -184,6 +188,12 @@ export default function ProductPage() {
             </div>
           </div>
           
+          {/* Product Reviews */}
+          <section className="section">
+            <h2 className="section-title">Avaliações dos Clientes</h2>
+            <ProductReviews productId={productId} />
+          </section>
+
           {/* Produtos relacionados */}
           <section className="section">
             <h2 className="section-title">Produtos Relacionados</h2>

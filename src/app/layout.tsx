@@ -82,6 +82,9 @@ export default function RootLayout({
                 
                 <div className="header-actions">
                   <SearchBar />
+                  <a href="/favoritos" className="wishlist-icon-link" title="Favoritos">
+                    <span className="icon">❤️</span>
+                  </a>
                   <CartHeader />
                 </div>
               </nav>
