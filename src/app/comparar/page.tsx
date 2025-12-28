@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { products } from "@/lib/products";
+import { getAllProducts } from "@/lib/products";
+
+const products = getAllProducts();
 import Link from "next/link";
 
 export default function ComparePage() {
