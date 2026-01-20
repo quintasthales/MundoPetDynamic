@@ -367,17 +367,7 @@ export default function CheckoutPage() {
     <div className="checkout-page">
       <h1>Finalizar Compra</h1>
       
-      {isSandbox && (
-        <div className="sandbox-warning">
-          ⚠️ AMBIENTE DE TESTES - Transações não são reais
-        </div>
-      )}
 
-      {scriptError && (
-        <div className="warning-message" style={{backgroundColor: '#fff3cd', padding: '1rem', marginBottom: '1rem', borderRadius: '0.5rem'}}>
-          ⚠️ Sistema funcionando em modo limitado. Algumas funcionalidades podem não estar disponíveis.
-        </div>
-      )}
       
       {!sessionId && !paymentError && (
         <div className="loading-payment">

@@ -344,11 +344,6 @@ export default function CheckoutPage() {
     <div className="checkout-page">
       <h1>Finalizar Compra</h1>
       
-      {isSandbox && (
-        <div className="sandbox-warning">
-          ⚠️ AMBIENTE DE TESTES - Nenhuma transação real será processada
-        </div>
-      )}
       
       {!sessionId && !paymentError && (
         <div className="loading-payment">
