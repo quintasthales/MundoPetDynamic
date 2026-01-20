@@ -132,7 +132,7 @@ export default function SaudeBemEstarPage() {
           
           <div className="products-grid">
             {getAllProducts()
-              .filter(product => product.subcategory === 'aromaterapia')
+              .filter(product => product.category === 'Higiene e Beleza')
               .map((product) => (
                 <div key={product.id} className="product-card">
                   <div className="product-image" style={{backgroundImage: `url('${product.images[0] || '/images/products/aromaterapia.jpg'}')`}}>
@@ -166,7 +166,7 @@ export default function SaudeBemEstarPage() {
           
           <div className="products-grid">
             {getAllProducts()
-              .filter(product => product.subcategory === 'fitness')
+              .filter(product => product.category === 'Saúde e Bem-Estar' || product.category === 'Adestramento')
               .map((product) => (
                 <div key={product.id} className="product-card">
                   <div className="product-image" style={{backgroundImage: `url('${product.images[0] || '/images/products/fitness.jpg'}')`}}>
@@ -200,7 +200,7 @@ export default function SaudeBemEstarPage() {
           
           <div className="products-grid">
             {getAllProducts()
-              .filter(product => product.subcategory === 'meditacao')
+              .filter(product => product.category === 'Brinquedos').slice(0, 4)
               .map((product) => (
                 <div key={product.id} className="product-card">
                   <div className="product-image" style={{backgroundImage: `url('${product.images[0] || '/images/products/meditacao.jpg'}')`}}>
@@ -234,7 +234,7 @@ export default function SaudeBemEstarPage() {
           
           <div className="products-grid">
             {getAllProducts()
-              .filter(product => product.subcategory === 'home-office')
+              .filter(product => product.category === 'Acessórios').slice(0, 4)
               .map((product) => (
                 <div key={product.id} className="product-card">
                   <div className="product-image" style={{backgroundImage: `url('${product.images[0] || '/images/products/home-office.jpg'}')`}}>
