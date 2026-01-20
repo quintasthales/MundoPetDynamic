@@ -1,0 +1,1339 @@
+[
+  {
+    "id": "prod-001",
+    "name": "Ração Premium para Cães Adultos - Frango e Arroz 15kg",
+    "description": "Ração completa e balanceada para cães adultos de todas as raças. Formulada com frango real, arroz integral e vegetais selecionados. Rico em proteínas de alta qualidade, vitaminas e minerais essenciais para a saúde do seu pet.",
+    "price": 189.9,
+    "compareAtPrice": 249.9,
+    "category": "Alimentação",
+    "subcategory": "Ração para Cães",
+    "brand": "PetNutri Premium",
+    "images": [
+      "https://images.unsplash.com/photo-1589924691995-400dc9ecc119?w=800",
+      "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=800"
+    ],
+    "specifications": {
+      "Peso": "15kg",
+      "Sabor": "Frango e Arroz",
+      "Idade": "Adulto",
+      "Porte": "Todos",
+      "Proteína": "26%",
+      "Gordura": "15%"
+    },
+    "tags": [
+      "ração",
+      "cachorro",
+      "adulto",
+      "premium",
+      "frango"
+    ],
+    "stock": 150,
+    "sku": "DOG-FOOD-001",
+    "weight": 15000,
+    "supplier": "PetNutri"
+  },
+  {
+    "id": "prod-002",
+    "name": "Ração Super Premium Filhote - Carne e Vegetais 10kg",
+    "description": "Nutrição completa para filhotes em crescimento. Fórmula especial com DHA para desenvolvimento cerebral, cálcio para ossos fortes e antioxidantes para sistema imunológico.",
+    "price": 159.9,
+    "compareAtPrice": 199.9,
+    "category": "Alimentação",
+    "subcategory": "Ração para Cães",
+    "brand": "PupGrow",
+    "images": [
+      "https://images.unsplash.com/photo-1589941013453-ec89f33b5e95?w=800"
+    ],
+    "specifications": {
+      "Peso": "10kg",
+      "Sabor": "Carne e Vegetais",
+      "Idade": "Filhote",
+      "Porte": "Todos",
+      "Proteína": "28%",
+      "Gordura": "18%"
+    },
+    "tags": [
+      "ração",
+      "filhote",
+      "cachorro",
+      "super premium"
+    ],
+    "stock": 120,
+    "sku": "DOG-FOOD-002",
+    "weight": 10000,
+    "supplier": "PupGrow"
+  },
+  {
+    "id": "prod-003",
+    "name": "Ração Premium para Gatos Adultos - Salmão 7.5kg",
+    "description": "Ração completa para gatos adultos com salmão fresco. Auxilia na saúde urinária, controle de bolas de pelo e pelagem brilhante. Sem corantes artificiais.",
+    "price": 139.9,
+    "compareAtPrice": 179.9,
+    "category": "Alimentação",
+    "subcategory": "Ração para Gatos",
+    "brand": "FelineChoice",
+    "images": [
+      "https://images.unsplash.com/photo-1591081564021-e3ec9e4d6b1f?w=800"
+    ],
+    "specifications": {
+      "Peso": "7.5kg",
+      "Sabor": "Salmão",
+      "Idade": "Adulto",
+      "Proteína": "32%",
+      "Gordura": "14%"
+    },
+    "tags": [
+      "ração",
+      "gato",
+      "adulto",
+      "salmão",
+      "premium"
+    ],
+    "stock": 100,
+    "sku": "CAT-FOOD-001",
+    "weight": 7500,
+    "supplier": "FelineChoice"
+  },
+  {
+    "id": "prod-004",
+    "name": "Bola Interativa com Dispenser de Petiscos",
+    "description": "Bola interativa que estimula o exercício físico e mental do seu pet. Libera petiscos conforme o animal brinca, mantendo-o entretido por horas. Material resistente e atóxico.",
+    "price": 45.9,
+    "compareAtPrice": 69.9,
+    "category": "Brinquedos",
+    "subcategory": "Brinquedos Interativos",
+    "brand": "PlayPet",
+    "images": [
+      "https://images.unsplash.com/photo-1535294435445-d7249524ef2e?w=800"
+    ],
+    "specifications": {
+      "Material": "Plástico resistente",
+      "Tamanho": "Médio (8cm)",
+      "Cor": "Azul/Verde"
+    },
+    "tags": [
+      "brinquedo",
+      "interativo",
+      "cachorro",
+      "gato"
+    ],
+    "stock": 200,
+    "sku": "TOY-001",
+    "weight": 150,
+    "supplier": "PlayPet"
+  },
+  {
+    "id": "prod-005",
+    "name": "Kit 3 Ratinhos de Pelúcia para Gatos",
+    "description": "Set de 3 ratinhos de pelúcia com catnip natural. Estimula o instinto de caça dos gatos e proporciona horas de diversão. Tamanho ideal para gatos de todas as idades.",
+    "price": 24.9,
+    "compareAtPrice": 34.9,
+    "category": "Brinquedos",
+    "subcategory": "Brinquedos para Gatos",
+    "brand": "MeowToys",
+    "images": [
+      "https://images.unsplash.com/photo-1545249390-6bdfa286032f?w=800"
+    ],
+    "specifications": {
+      "Material": "Pelúcia",
+      "Quantidade": "3 unidades",
+      "Tamanho": "Pequeno (5cm cada)"
+    },
+    "tags": [
+      "brinquedo",
+      "gato",
+      "pelúcia",
+      "catnip"
+    ],
+    "stock": 250,
+    "sku": "TOY-002",
+    "weight": 50,
+    "supplier": "MeowToys"
+  },
+  {
+    "id": "prod-006",
+    "name": "Coleira Ajustável com Guia - Tamanho Médio",
+    "description": "Coleira confortável com guia de 1.5m. Material resistente e durável com fecho de segurança. Ajustável para cães de 10-25kg. Disponível em várias cores.",
+    "price": 39.9,
+    "compareAtPrice": 59.9,
+    "category": "Acessórios",
+    "subcategory": "Coleiras e Guias",
+    "brand": "SafePet",
+    "images": [
+      "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=800"
+    ],
+    "specifications": {
+      "Material": "Nylon reforçado",
+      "Tamanho": "Médio",
+      "Comprimento da guia": "1.5m",
+      "Peso suportado": "10-25kg"
+    },
+    "tags": [
+      "coleira",
+      "guia",
+      "cachorro",
+      "passeio"
+    ],
+    "stock": 180,
+    "sku": "ACC-001",
+    "weight": 200,
+    "supplier": "SafePet"
+  },
+  {
+    "id": "prod-007",
+    "name": "Cama Ortopédica para Cães - Grande",
+    "description": "Cama ortopédica com espuma viscoelástica que se adapta ao corpo do pet. Ideal para cães idosos ou com problemas articulares. Capa removível e lavável.",
+    "price": 249.9,
+    "compareAtPrice": 349.9,
+    "category": "Acessórios",
+    "subcategory": "Camas e Almofadas",
+    "brand": "ComfortPet",
+    "images": [
+      "https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=800"
+    ],
+    "specifications": {
+      "Material": "Espuma viscoelástica",
+      "Tamanho": "Grande (90x70cm)",
+      "Capa": "Removível e lavável",
+      "Peso suportado": "Até 40kg"
+    },
+    "tags": [
+      "cama",
+      "ortopédica",
+      "cachorro",
+      "conforto"
+    ],
+    "stock": 75,
+    "sku": "ACC-002",
+    "weight": 3000,
+    "supplier": "ComfortPet"
+  },
+  {
+    "id": "prod-008",
+    "name": "Shampoo Hipoalergênico para Cães e Gatos - 500ml",
+    "description": "Shampoo suave e hipoalergênico, ideal para pets com pele sensível. Fórmula sem parabenos com aloe vera e camomila. Deixa o pelo macio e brilhante.",
+    "price": 34.9,
+    "compareAtPrice": 49.9,
+    "category": "Higiene e Beleza",
+    "subcategory": "Shampoos",
+    "brand": "CleanPet",
+    "images": [
+      "https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?w=800"
+    ],
+    "specifications": {
+      "Volume": "500ml",
+      "Tipo": "Hipoalergênico",
+      "pH": "Neutro",
+      "Ingredientes": "Aloe vera, camomila"
+    },
+    "tags": [
+      "shampoo",
+      "higiene",
+      "hipoalergênico",
+      "cachorro",
+      "gato"
+    ],
+    "stock": 150,
+    "sku": "HYG-001",
+    "weight": 550,
+    "supplier": "CleanPet"
+  },
+  {
+    "id": "prod-009",
+    "name": "Areia Sanitária Aglomerante - 10kg",
+    "description": "Areia sanitária premium de alta absorção. Forma blocos sólidos para fácil remoção. Controla odores por até 7 dias. Baixo tracking.",
+    "price": 49.9,
+    "compareAtPrice": 69.9,
+    "category": "Higiene e Beleza",
+    "subcategory": "Areia Sanitária",
+    "brand": "FreshLitter",
+    "images": [
+      "https://images.unsplash.com/photo-1529257414772-1960b7bea4eb?w=800"
+    ],
+    "specifications": {
+      "Peso": "10kg",
+      "Tipo": "Aglomerante",
+      "Fragrância": "Sem perfume",
+      "Duração": "7 dias"
+    },
+    "tags": [
+      "areia",
+      "sanitária",
+      "gato",
+      "aglomerante"
+    ],
+    "stock": 200,
+    "sku": "HYG-002",
+    "weight": 10000,
+    "supplier": "FreshLitter"
+  },
+  {
+    "id": "prod-010",
+    "name": "Antipulgas e Carrapatos - Pipeta 3ml",
+    "description": "Proteção completa contra pulgas, carrapatos e mosquitos por 30 dias. Ação rápida e eficaz. Resistente à água após 48h da aplicação.",
+    "price": 54.9,
+    "compareAtPrice": 74.9,
+    "category": "Saúde e Bem-Estar",
+    "subcategory": "Antipulgas",
+    "brand": "VetProtect",
+    "images": [
+      "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=800"
+    ],
+    "specifications": {
+      "Volume": "3ml",
+      "Duração": "30 dias",
+      "Peso do pet": "10-25kg",
+      "Princípio ativo": "Fipronil"
+    },
+    "tags": [
+      "antipulgas",
+      "carrapatos",
+      "saúde",
+      "cachorro"
+    ],
+    "stock": 300,
+    "sku": "HEALTH-001",
+    "weight": 10,
+    "supplier": "VetProtect"
+  },
+  {
+    "id": "prod-011",
+    "name": "Alimentação Premium PetNutri - Produto 11",
+    "description": "Produto de alta qualidade para seu pet. Desenvolvido com ingredientes selecionados e tecnologia avançada para garantir o melhor para seu animal de estimação.",
+    "price": 29.9,
+    "compareAtPrice": 39.9,
+    "category": "Alimentação",
+    "subcategory": "Alimentação Diversos",
+    "brand": "PetNutri",
+    "images": [
+      "https://images.unsplash.com/photo-1589924691995?w=800"
+    ],
+    "specifications": {
+      "Qualidade": "Premium",
+      "Garantia": "90 dias"
+    },
+    "tags": [
+      "alimentação",
+      "premium",
+      "pet"
+    ],
+    "stock": 50,
+    "sku": "PROD-011",
+    "weight": 100,
+    "supplier": "PetNutri"
+  },
+  {
+    "id": "prod-012",
+    "name": "Brinquedos Premium PupGrow - Produto 12",
+    "description": "Produto de alta qualidade para seu pet. Desenvolvido com ingredientes selecionados e tecnologia avançada para garantir o melhor para seu animal de estimação.",
+    "price": 39.9,
+    "compareAtPrice": 49.9,
+    "category": "Brinquedos",
+    "subcategory": "Brinquedos Diversos",
+    "brand": "PupGrow",
+    "images": [
+      "https://images.unsplash.com/photo-1589924691996?w=800"
+    ],
+    "specifications": {
+      "Qualidade": "Premium",
+      "Garantia": "90 dias"
+    },
+    "tags": [
+      "brinquedos",
+      "premium",
+      "pet"
+    ],
+    "stock": 55,
+    "sku": "PROD-012",
+    "weight": 150,
+    "supplier": "PupGrow"
+  },
+  {
+    "id": "prod-013",
+    "name": "Acessórios Premium FelineChoice - Produto 13",
+    "description": "Produto de alta qualidade para seu pet. Desenvolvido com ingredientes selecionados e tecnologia avançada para garantir o melhor para seu animal de estimação.",
+    "price": 49.9,
+    "compareAtPrice": 59.9,
+    "category": "Acessórios",
+    "subcategory": "Acessórios Diversos",
+    "brand": "FelineChoice",
+    "images": [
+      "https://images.unsplash.com/photo-1589924691997?w=800"
+    ],
+    "specifications": {
+      "Qualidade": "Premium",
+      "Garantia": "90 dias"
+    },
+    "tags": [
+      "acessórios",
+      "premium",
+      "pet"
+    ],
+    "stock": 60,
+    "sku": "PROD-013",
+    "weight": 200,
+    "supplier": "FelineChoice"
+  },
+  {
+    "id": "prod-014",
+    "name": "Higiene e Beleza Premium NutriPet - Produto 14",
+    "description": "Produto de alta qualidade para seu pet. Desenvolvido com ingredientes selecionados e tecnologia avançada para garantir o melhor para seu animal de estimação.",
+    "price": 59.9,
+    "compareAtPrice": 69.9,
+    "category": "Higiene e Beleza",
+    "subcategory": "Higiene e Beleza Diversos",
+    "brand": "NutriPet",
+    "images": [
+      "https://images.unsplash.com/photo-1589924691998?w=800"
+    ],
+    "specifications": {
+      "Qualidade": "Premium",
+      "Garantia": "90 dias"
+    },
+    "tags": [
+      "higiene e beleza",
+      "premium",
+      "pet"
+    ],
+    "stock": 65,
+    "sku": "PROD-014",
+    "weight": 250,
+    "supplier": "NutriPet"
+  },
+  {
+    "id": "prod-015",
+    "name": "Saúde e Bem-Estar Premium PremiumPet - Produto 15",
+    "description": "Produto de alta qualidade para seu pet. Desenvolvido com ingredientes selecionados e tecnologia avançada para garantir o melhor para seu animal de estimação.",
+    "price": 69.9,
+    "compareAtPrice": 79.9,
+    "category": "Saúde e Bem-Estar",
+    "subcategory": "Saúde e Bem-Estar Diversos",
+    "brand": "PremiumPet",
+    "images": [
+      "https://images.unsplash.com/photo-1589924691999?w=800"
+    ],
+    "specifications": {
+      "Qualidade": "Premium",
+      "Garantia": "90 dias"
+    },
+    "tags": [
+      "saúde e bem-estar",
+      "premium",
+      "pet"
+    ],
+    "stock": 70,
+    "sku": "PROD-015",
+    "weight": 300,
+    "supplier": "PremiumPet"
+  },
+  {
+    "id": "prod-016",
+    "name": "Alimentação Premium PetNutri - Produto 16",
+    "description": "Produto de alta qualidade para seu pet. Desenvolvido com ingredientes selecionados e tecnologia avançada para garantir o melhor para seu animal de estimação.",
+    "price": 79.9,
+    "compareAtPrice": 89.9,
+    "category": "Alimentação",
+    "subcategory": "Alimentação Diversos",
+    "brand": "PetNutri",
+    "images": [
+      "https://images.unsplash.com/photo-1589924692000?w=800"
+    ],
+    "specifications": {
+      "Qualidade": "Premium",
+      "Garantia": "90 dias"
+    },
+    "tags": [
+      "alimentação",
+      "premium",
+      "pet"
+    ],
+    "stock": 75,
+    "sku": "PROD-016",
+    "weight": 350,
+    "supplier": "PetNutri"
+  },
+  {
+    "id": "prod-017",
+    "name": "Brinquedos Premium PupGrow - Produto 17",
+    "description": "Produto de alta qualidade para seu pet. Desenvolvido com ingredientes selecionados e tecnologia avançada para garantir o melhor para seu animal de estimação.",
+    "price": 89.9,
+    "compareAtPrice": 99.9,
+    "category": "Brinquedos",
+    "subcategory": "Brinquedos Diversos",
+    "brand": "PupGrow",
+    "images": [
+      "https://images.unsplash.com/photo-1589924692001?w=800"
+    ],
+    "specifications": {
+      "Qualidade": "Premium",
+      "Garantia": "90 dias"
+    },
+    "tags": [
+      "brinquedos",
+      "premium",
+      "pet"
+    ],
+    "stock": 80,
+    "sku": "PROD-017",
+    "weight": 400,
+    "supplier": "PupGrow"
+  },
+  {
+    "id": "prod-018",
+    "name": "Acessórios Premium FelineChoice - Produto 18",
+    "description": "Produto de alta qualidade para seu pet. Desenvolvido com ingredientes selecionados e tecnologia avançada para garantir o melhor para seu animal de estimação.",
+    "price": 99.9,
+    "compareAtPrice": 109.9,
+    "category": "Acessórios",
+    "subcategory": "Acessórios Diversos",
+    "brand": "FelineChoice",
+    "images": [
+      "https://images.unsplash.com/photo-1589924692002?w=800"
+    ],
+    "specifications": {
+      "Qualidade": "Premium",
+      "Garantia": "90 dias"
+    },
+    "tags": [
+      "acessórios",
+      "premium",
+      "pet"
+    ],
+    "stock": 85,
+    "sku": "PROD-018",
+    "weight": 450,
+    "supplier": "FelineChoice"
+  },
+  {
+    "id": "prod-019",
+    "name": "Higiene e Beleza Premium NutriPet - Produto 19",
+    "description": "Produto de alta qualidade para seu pet. Desenvolvido com ingredientes selecionados e tecnologia avançada para garantir o melhor para seu animal de estimação.",
+    "price": 109.9,
+    "compareAtPrice": 119.9,
+    "category": "Higiene e Beleza",
+    "subcategory": "Higiene e Beleza Diversos",
+    "brand": "NutriPet",
+    "images": [
+      "https://images.unsplash.com/photo-1589924692003?w=800"
+    ],
+    "specifications": {
+      "Qualidade": "Premium",
+      "Garantia": "90 dias"
+    },
+    "tags": [
+      "higiene e beleza",
+      "premium",
+      "pet"
+    ],
+    "stock": 90,
+    "sku": "PROD-019",
+    "weight": 500,
+    "supplier": "NutriPet"
+  },
+  {
+    "id": "prod-020",
+    "name": "Saúde e Bem-Estar Premium PremiumPet - Produto 20",
+    "description": "Produto de alta qualidade para seu pet. Desenvolvido com ingredientes selecionados e tecnologia avançada para garantir o melhor para seu animal de estimação.",
+    "price": 119.9,
+    "compareAtPrice": 129.9,
+    "category": "Saúde e Bem-Estar",
+    "subcategory": "Saúde e Bem-Estar Diversos",
+    "brand": "PremiumPet",
+    "images": [
+      "https://images.unsplash.com/photo-1589924692004?w=800"
+    ],
+    "specifications": {
+      "Qualidade": "Premium",
+      "Garantia": "90 dias"
+    },
+    "tags": [
+      "saúde e bem-estar",
+      "premium",
+      "pet"
+    ],
+    "stock": 95,
+    "sku": "PROD-020",
+    "weight": 550,
+    "supplier": "PremiumPet"
+  },
+  {
+    "id": "prod-021",
+    "name": "Alimentação Premium PetNutri - Produto 21",
+    "description": "Produto de alta qualidade para seu pet. Desenvolvido com ingredientes selecionados e tecnologia avançada para garantir o melhor para seu animal de estimação.",
+    "price": 129.9,
+    "compareAtPrice": 139.9,
+    "category": "Alimentação",
+    "subcategory": "Alimentação Diversos",
+    "brand": "PetNutri",
+    "images": [
+      "https://images.unsplash.com/photo-1589924692005?w=800"
+    ],
+    "specifications": {
+      "Qualidade": "Premium",
+      "Garantia": "90 dias"
+    },
+    "tags": [
+      "alimentação",
+      "premium",
+      "pet"
+    ],
+    "stock": 100,
+    "sku": "PROD-021",
+    "weight": 600,
+    "supplier": "PetNutri"
+  },
+  {
+    "id": "prod-022",
+    "name": "Brinquedos Premium PupGrow - Produto 22",
+    "description": "Produto de alta qualidade para seu pet. Desenvolvido com ingredientes selecionados e tecnologia avançada para garantir o melhor para seu animal de estimação.",
+    "price": 139.9,
+    "compareAtPrice": 149.9,
+    "category": "Brinquedos",
+    "subcategory": "Brinquedos Diversos",
+    "brand": "PupGrow",
+    "images": [
+      "https://images.unsplash.com/photo-1589924692006?w=800"
+    ],
+    "specifications": {
+      "Qualidade": "Premium",
+      "Garantia": "90 dias"
+    },
+    "tags": [
+      "brinquedos",
+      "premium",
+      "pet"
+    ],
+    "stock": 105,
+    "sku": "PROD-022",
+    "weight": 650,
+    "supplier": "PupGrow"
+  },
+  {
+    "id": "prod-023",
+    "name": "Acessórios Premium FelineChoice - Produto 23",
+    "description": "Produto de alta qualidade para seu pet. Desenvolvido com ingredientes selecionados e tecnologia avançada para garantir o melhor para seu animal de estimação.",
+    "price": 149.9,
+    "compareAtPrice": 159.9,
+    "category": "Acessórios",
+    "subcategory": "Acessórios Diversos",
+    "brand": "FelineChoice",
+    "images": [
+      "https://images.unsplash.com/photo-1589924692007?w=800"
+    ],
+    "specifications": {
+      "Qualidade": "Premium",
+      "Garantia": "90 dias"
+    },
+    "tags": [
+      "acessórios",
+      "premium",
+      "pet"
+    ],
+    "stock": 110,
+    "sku": "PROD-023",
+    "weight": 700,
+    "supplier": "FelineChoice"
+  },
+  {
+    "id": "prod-024",
+    "name": "Higiene e Beleza Premium NutriPet - Produto 24",
+    "description": "Produto de alta qualidade para seu pet. Desenvolvido com ingredientes selecionados e tecnologia avançada para garantir o melhor para seu animal de estimação.",
+    "price": 159.9,
+    "compareAtPrice": 169.9,
+    "category": "Higiene e Beleza",
+    "subcategory": "Higiene e Beleza Diversos",
+    "brand": "NutriPet",
+    "images": [
+      "https://images.unsplash.com/photo-1589924692008?w=800"
+    ],
+    "specifications": {
+      "Qualidade": "Premium",
+      "Garantia": "90 dias"
+    },
+    "tags": [
+      "higiene e beleza",
+      "premium",
+      "pet"
+    ],
+    "stock": 115,
+    "sku": "PROD-024",
+    "weight": 750,
+    "supplier": "NutriPet"
+  },
+  {
+    "id": "prod-025",
+    "name": "Saúde e Bem-Estar Premium PremiumPet - Produto 25",
+    "description": "Produto de alta qualidade para seu pet. Desenvolvido com ingredientes selecionados e tecnologia avançada para garantir o melhor para seu animal de estimação.",
+    "price": 169.9,
+    "compareAtPrice": 179.9,
+    "category": "Saúde e Bem-Estar",
+    "subcategory": "Saúde e Bem-Estar Diversos",
+    "brand": "PremiumPet",
+    "images": [
+      "https://images.unsplash.com/photo-1589924692009?w=800"
+    ],
+    "specifications": {
+      "Qualidade": "Premium",
+      "Garantia": "90 dias"
+    },
+    "tags": [
+      "saúde e bem-estar",
+      "premium",
+      "pet"
+    ],
+    "stock": 120,
+    "sku": "PROD-025",
+    "weight": 800,
+    "supplier": "PremiumPet"
+  },
+  {
+    "id": "prod-026",
+    "name": "Alimentação Premium PetNutri - Produto 26",
+    "description": "Produto de alta qualidade para seu pet. Desenvolvido com ingredientes selecionados e tecnologia avançada para garantir o melhor para seu animal de estimação.",
+    "price": 179.9,
+    "compareAtPrice": 189.9,
+    "category": "Alimentação",
+    "subcategory": "Alimentação Diversos",
+    "brand": "PetNutri",
+    "images": [
+      "https://images.unsplash.com/photo-1589924692010?w=800"
+    ],
+    "specifications": {
+      "Qualidade": "Premium",
+      "Garantia": "90 dias"
+    },
+    "tags": [
+      "alimentação",
+      "premium",
+      "pet"
+    ],
+    "stock": 125,
+    "sku": "PROD-026",
+    "weight": 850,
+    "supplier": "PetNutri"
+  },
+  {
+    "id": "prod-027",
+    "name": "Brinquedos Premium PupGrow - Produto 27",
+    "description": "Produto de alta qualidade para seu pet. Desenvolvido com ingredientes selecionados e tecnologia avançada para garantir o melhor para seu animal de estimação.",
+    "price": 189.9,
+    "compareAtPrice": 199.9,
+    "category": "Brinquedos",
+    "subcategory": "Brinquedos Diversos",
+    "brand": "PupGrow",
+    "images": [
+      "https://images.unsplash.com/photo-1589924692011?w=800"
+    ],
+    "specifications": {
+      "Qualidade": "Premium",
+      "Garantia": "90 dias"
+    },
+    "tags": [
+      "brinquedos",
+      "premium",
+      "pet"
+    ],
+    "stock": 130,
+    "sku": "PROD-027",
+    "weight": 900,
+    "supplier": "PupGrow"
+  },
+  {
+    "id": "prod-028",
+    "name": "Acessórios Premium FelineChoice - Produto 28",
+    "description": "Produto de alta qualidade para seu pet. Desenvolvido com ingredientes selecionados e tecnologia avançada para garantir o melhor para seu animal de estimação.",
+    "price": 199.9,
+    "compareAtPrice": 209.9,
+    "category": "Acessórios",
+    "subcategory": "Acessórios Diversos",
+    "brand": "FelineChoice",
+    "images": [
+      "https://images.unsplash.com/photo-1589924692012?w=800"
+    ],
+    "specifications": {
+      "Qualidade": "Premium",
+      "Garantia": "90 dias"
+    },
+    "tags": [
+      "acessórios",
+      "premium",
+      "pet"
+    ],
+    "stock": 135,
+    "sku": "PROD-028",
+    "weight": 950,
+    "supplier": "FelineChoice"
+  },
+  {
+    "id": "prod-029",
+    "name": "Higiene e Beleza Premium NutriPet - Produto 29",
+    "description": "Produto de alta qualidade para seu pet. Desenvolvido com ingredientes selecionados e tecnologia avançada para garantir o melhor para seu animal de estimação.",
+    "price": 209.9,
+    "compareAtPrice": 219.9,
+    "category": "Higiene e Beleza",
+    "subcategory": "Higiene e Beleza Diversos",
+    "brand": "NutriPet",
+    "images": [
+      "https://images.unsplash.com/photo-1589924692013?w=800"
+    ],
+    "specifications": {
+      "Qualidade": "Premium",
+      "Garantia": "90 dias"
+    },
+    "tags": [
+      "higiene e beleza",
+      "premium",
+      "pet"
+    ],
+    "stock": 140,
+    "sku": "PROD-029",
+    "weight": 1000,
+    "supplier": "NutriPet"
+  },
+  {
+    "id": "prod-030",
+    "name": "Saúde e Bem-Estar Premium PremiumPet - Produto 30",
+    "description": "Produto de alta qualidade para seu pet. Desenvolvido com ingredientes selecionados e tecnologia avançada para garantir o melhor para seu animal de estimação.",
+    "price": 219.9,
+    "compareAtPrice": 229.9,
+    "category": "Saúde e Bem-Estar",
+    "subcategory": "Saúde e Bem-Estar Diversos",
+    "brand": "PremiumPet",
+    "images": [
+      "https://images.unsplash.com/photo-1589924692014?w=800"
+    ],
+    "specifications": {
+      "Qualidade": "Premium",
+      "Garantia": "90 dias"
+    },
+    "tags": [
+      "saúde e bem-estar",
+      "premium",
+      "pet"
+    ],
+    "stock": 145,
+    "sku": "PROD-030",
+    "weight": 1050,
+    "supplier": "PremiumPet"
+  },
+  {
+    "id": "prod-031",
+    "name": "Alimentação Premium PetNutri - Produto 31",
+    "description": "Produto de alta qualidade para seu pet. Desenvolvido com ingredientes selecionados e tecnologia avançada para garantir o melhor para seu animal de estimação.",
+    "price": 229.9,
+    "compareAtPrice": 239.9,
+    "category": "Alimentação",
+    "subcategory": "Alimentação Diversos",
+    "brand": "PetNutri",
+    "images": [
+      "https://images.unsplash.com/photo-1589924692015?w=800"
+    ],
+    "specifications": {
+      "Qualidade": "Premium",
+      "Garantia": "90 dias"
+    },
+    "tags": [
+      "alimentação",
+      "premium",
+      "pet"
+    ],
+    "stock": 150,
+    "sku": "PROD-031",
+    "weight": 1100,
+    "supplier": "PetNutri"
+  },
+  {
+    "id": "prod-032",
+    "name": "Brinquedos Premium PupGrow - Produto 32",
+    "description": "Produto de alta qualidade para seu pet. Desenvolvido com ingredientes selecionados e tecnologia avançada para garantir o melhor para seu animal de estimação.",
+    "price": 239.9,
+    "compareAtPrice": 249.9,
+    "category": "Brinquedos",
+    "subcategory": "Brinquedos Diversos",
+    "brand": "PupGrow",
+    "images": [
+      "https://images.unsplash.com/photo-1589924692016?w=800"
+    ],
+    "specifications": {
+      "Qualidade": "Premium",
+      "Garantia": "90 dias"
+    },
+    "tags": [
+      "brinquedos",
+      "premium",
+      "pet"
+    ],
+    "stock": 155,
+    "sku": "PROD-032",
+    "weight": 1150,
+    "supplier": "PupGrow"
+  },
+  {
+    "id": "prod-033",
+    "name": "Acessórios Premium FelineChoice - Produto 33",
+    "description": "Produto de alta qualidade para seu pet. Desenvolvido com ingredientes selecionados e tecnologia avançada para garantir o melhor para seu animal de estimação.",
+    "price": 249.9,
+    "compareAtPrice": 259.9,
+    "category": "Acessórios",
+    "subcategory": "Acessórios Diversos",
+    "brand": "FelineChoice",
+    "images": [
+      "https://images.unsplash.com/photo-1589924692017?w=800"
+    ],
+    "specifications": {
+      "Qualidade": "Premium",
+      "Garantia": "90 dias"
+    },
+    "tags": [
+      "acessórios",
+      "premium",
+      "pet"
+    ],
+    "stock": 160,
+    "sku": "PROD-033",
+    "weight": 1200,
+    "supplier": "FelineChoice"
+  },
+  {
+    "id": "prod-034",
+    "name": "Higiene e Beleza Premium NutriPet - Produto 34",
+    "description": "Produto de alta qualidade para seu pet. Desenvolvido com ingredientes selecionados e tecnologia avançada para garantir o melhor para seu animal de estimação.",
+    "price": 259.9,
+    "compareAtPrice": 269.9,
+    "category": "Higiene e Beleza",
+    "subcategory": "Higiene e Beleza Diversos",
+    "brand": "NutriPet",
+    "images": [
+      "https://images.unsplash.com/photo-1589924692018?w=800"
+    ],
+    "specifications": {
+      "Qualidade": "Premium",
+      "Garantia": "90 dias"
+    },
+    "tags": [
+      "higiene e beleza",
+      "premium",
+      "pet"
+    ],
+    "stock": 165,
+    "sku": "PROD-034",
+    "weight": 1250,
+    "supplier": "NutriPet"
+  },
+  {
+    "id": "prod-035",
+    "name": "Saúde e Bem-Estar Premium PremiumPet - Produto 35",
+    "description": "Produto de alta qualidade para seu pet. Desenvolvido com ingredientes selecionados e tecnologia avançada para garantir o melhor para seu animal de estimação.",
+    "price": 269.9,
+    "compareAtPrice": 279.9,
+    "category": "Saúde e Bem-Estar",
+    "subcategory": "Saúde e Bem-Estar Diversos",
+    "brand": "PremiumPet",
+    "images": [
+      "https://images.unsplash.com/photo-1589924692019?w=800"
+    ],
+    "specifications": {
+      "Qualidade": "Premium",
+      "Garantia": "90 dias"
+    },
+    "tags": [
+      "saúde e bem-estar",
+      "premium",
+      "pet"
+    ],
+    "stock": 170,
+    "sku": "PROD-035",
+    "weight": 1300,
+    "supplier": "PremiumPet"
+  },
+  {
+    "id": "prod-036",
+    "name": "Alimentação Premium PetNutri - Produto 36",
+    "description": "Produto de alta qualidade para seu pet. Desenvolvido com ingredientes selecionados e tecnologia avançada para garantir o melhor para seu animal de estimação.",
+    "price": 279.9,
+    "compareAtPrice": 289.9,
+    "category": "Alimentação",
+    "subcategory": "Alimentação Diversos",
+    "brand": "PetNutri",
+    "images": [
+      "https://images.unsplash.com/photo-1589924692020?w=800"
+    ],
+    "specifications": {
+      "Qualidade": "Premium",
+      "Garantia": "90 dias"
+    },
+    "tags": [
+      "alimentação",
+      "premium",
+      "pet"
+    ],
+    "stock": 175,
+    "sku": "PROD-036",
+    "weight": 1350,
+    "supplier": "PetNutri"
+  },
+  {
+    "id": "prod-037",
+    "name": "Brinquedos Premium PupGrow - Produto 37",
+    "description": "Produto de alta qualidade para seu pet. Desenvolvido com ingredientes selecionados e tecnologia avançada para garantir o melhor para seu animal de estimação.",
+    "price": 289.9,
+    "compareAtPrice": 299.9,
+    "category": "Brinquedos",
+    "subcategory": "Brinquedos Diversos",
+    "brand": "PupGrow",
+    "images": [
+      "https://images.unsplash.com/photo-1589924692021?w=800"
+    ],
+    "specifications": {
+      "Qualidade": "Premium",
+      "Garantia": "90 dias"
+    },
+    "tags": [
+      "brinquedos",
+      "premium",
+      "pet"
+    ],
+    "stock": 180,
+    "sku": "PROD-037",
+    "weight": 1400,
+    "supplier": "PupGrow"
+  },
+  {
+    "id": "prod-038",
+    "name": "Acessórios Premium FelineChoice - Produto 38",
+    "description": "Produto de alta qualidade para seu pet. Desenvolvido com ingredientes selecionados e tecnologia avançada para garantir o melhor para seu animal de estimação.",
+    "price": 299.9,
+    "compareAtPrice": 309.9,
+    "category": "Acessórios",
+    "subcategory": "Acessórios Diversos",
+    "brand": "FelineChoice",
+    "images": [
+      "https://images.unsplash.com/photo-1589924692022?w=800"
+    ],
+    "specifications": {
+      "Qualidade": "Premium",
+      "Garantia": "90 dias"
+    },
+    "tags": [
+      "acessórios",
+      "premium",
+      "pet"
+    ],
+    "stock": 185,
+    "sku": "PROD-038",
+    "weight": 1450,
+    "supplier": "FelineChoice"
+  },
+  {
+    "id": "prod-039",
+    "name": "Higiene e Beleza Premium NutriPet - Produto 39",
+    "description": "Produto de alta qualidade para seu pet. Desenvolvido com ingredientes selecionados e tecnologia avançada para garantir o melhor para seu animal de estimação.",
+    "price": 309.9,
+    "compareAtPrice": 319.9,
+    "category": "Higiene e Beleza",
+    "subcategory": "Higiene e Beleza Diversos",
+    "brand": "NutriPet",
+    "images": [
+      "https://images.unsplash.com/photo-1589924692023?w=800"
+    ],
+    "specifications": {
+      "Qualidade": "Premium",
+      "Garantia": "90 dias"
+    },
+    "tags": [
+      "higiene e beleza",
+      "premium",
+      "pet"
+    ],
+    "stock": 190,
+    "sku": "PROD-039",
+    "weight": 1500,
+    "supplier": "NutriPet"
+  },
+  {
+    "id": "prod-040",
+    "name": "Saúde e Bem-Estar Premium PremiumPet - Produto 40",
+    "description": "Produto de alta qualidade para seu pet. Desenvolvido com ingredientes selecionados e tecnologia avançada para garantir o melhor para seu animal de estimação.",
+    "price": 319.9,
+    "compareAtPrice": 329.9,
+    "category": "Saúde e Bem-Estar",
+    "subcategory": "Saúde e Bem-Estar Diversos",
+    "brand": "PremiumPet",
+    "images": [
+      "https://images.unsplash.com/photo-1589924692024?w=800"
+    ],
+    "specifications": {
+      "Qualidade": "Premium",
+      "Garantia": "90 dias"
+    },
+    "tags": [
+      "saúde e bem-estar",
+      "premium",
+      "pet"
+    ],
+    "stock": 195,
+    "sku": "PROD-040",
+    "weight": 1550,
+    "supplier": "PremiumPet"
+  },
+  {
+    "id": "prod-041",
+    "name": "Alimentação Premium PetNutri - Produto 41",
+    "description": "Produto de alta qualidade para seu pet. Desenvolvido com ingredientes selecionados e tecnologia avançada para garantir o melhor para seu animal de estimação.",
+    "price": 329.9,
+    "compareAtPrice": 339.9,
+    "category": "Alimentação",
+    "subcategory": "Alimentação Diversos",
+    "brand": "PetNutri",
+    "images": [
+      "https://images.unsplash.com/photo-1589924692025?w=800"
+    ],
+    "specifications": {
+      "Qualidade": "Premium",
+      "Garantia": "90 dias"
+    },
+    "tags": [
+      "alimentação",
+      "premium",
+      "pet"
+    ],
+    "stock": 200,
+    "sku": "PROD-041",
+    "weight": 1600,
+    "supplier": "PetNutri"
+  },
+  {
+    "id": "prod-042",
+    "name": "Brinquedos Premium PupGrow - Produto 42",
+    "description": "Produto de alta qualidade para seu pet. Desenvolvido com ingredientes selecionados e tecnologia avançada para garantir o melhor para seu animal de estimação.",
+    "price": 339.9,
+    "compareAtPrice": 349.9,
+    "category": "Brinquedos",
+    "subcategory": "Brinquedos Diversos",
+    "brand": "PupGrow",
+    "images": [
+      "https://images.unsplash.com/photo-1589924692026?w=800"
+    ],
+    "specifications": {
+      "Qualidade": "Premium",
+      "Garantia": "90 dias"
+    },
+    "tags": [
+      "brinquedos",
+      "premium",
+      "pet"
+    ],
+    "stock": 205,
+    "sku": "PROD-042",
+    "weight": 1650,
+    "supplier": "PupGrow"
+  },
+  {
+    "id": "prod-043",
+    "name": "Acessórios Premium FelineChoice - Produto 43",
+    "description": "Produto de alta qualidade para seu pet. Desenvolvido com ingredientes selecionados e tecnologia avançada para garantir o melhor para seu animal de estimação.",
+    "price": 349.9,
+    "compareAtPrice": 359.9,
+    "category": "Acessórios",
+    "subcategory": "Acessórios Diversos",
+    "brand": "FelineChoice",
+    "images": [
+      "https://images.unsplash.com/photo-1589924692027?w=800"
+    ],
+    "specifications": {
+      "Qualidade": "Premium",
+      "Garantia": "90 dias"
+    },
+    "tags": [
+      "acessórios",
+      "premium",
+      "pet"
+    ],
+    "stock": 210,
+    "sku": "PROD-043",
+    "weight": 1700,
+    "supplier": "FelineChoice"
+  },
+  {
+    "id": "prod-044",
+    "name": "Higiene e Beleza Premium NutriPet - Produto 44",
+    "description": "Produto de alta qualidade para seu pet. Desenvolvido com ingredientes selecionados e tecnologia avançada para garantir o melhor para seu animal de estimação.",
+    "price": 359.9,
+    "compareAtPrice": 369.9,
+    "category": "Higiene e Beleza",
+    "subcategory": "Higiene e Beleza Diversos",
+    "brand": "NutriPet",
+    "images": [
+      "https://images.unsplash.com/photo-1589924692028?w=800"
+    ],
+    "specifications": {
+      "Qualidade": "Premium",
+      "Garantia": "90 dias"
+    },
+    "tags": [
+      "higiene e beleza",
+      "premium",
+      "pet"
+    ],
+    "stock": 215,
+    "sku": "PROD-044",
+    "weight": 1750,
+    "supplier": "NutriPet"
+  },
+  {
+    "id": "prod-045",
+    "name": "Saúde e Bem-Estar Premium PremiumPet - Produto 45",
+    "description": "Produto de alta qualidade para seu pet. Desenvolvido com ingredientes selecionados e tecnologia avançada para garantir o melhor para seu animal de estimação.",
+    "price": 369.9,
+    "compareAtPrice": 379.9,
+    "category": "Saúde e Bem-Estar",
+    "subcategory": "Saúde e Bem-Estar Diversos",
+    "brand": "PremiumPet",
+    "images": [
+      "https://images.unsplash.com/photo-1589924692029?w=800"
+    ],
+    "specifications": {
+      "Qualidade": "Premium",
+      "Garantia": "90 dias"
+    },
+    "tags": [
+      "saúde e bem-estar",
+      "premium",
+      "pet"
+    ],
+    "stock": 220,
+    "sku": "PROD-045",
+    "weight": 1800,
+    "supplier": "PremiumPet"
+  },
+  {
+    "id": "prod-046",
+    "name": "Alimentação Premium PetNutri - Produto 46",
+    "description": "Produto de alta qualidade para seu pet. Desenvolvido com ingredientes selecionados e tecnologia avançada para garantir o melhor para seu animal de estimação.",
+    "price": 379.9,
+    "compareAtPrice": 389.9,
+    "category": "Alimentação",
+    "subcategory": "Alimentação Diversos",
+    "brand": "PetNutri",
+    "images": [
+      "https://images.unsplash.com/photo-1589924692030?w=800"
+    ],
+    "specifications": {
+      "Qualidade": "Premium",
+      "Garantia": "90 dias"
+    },
+    "tags": [
+      "alimentação",
+      "premium",
+      "pet"
+    ],
+    "stock": 225,
+    "sku": "PROD-046",
+    "weight": 1850,
+    "supplier": "PetNutri"
+  },
+  {
+    "id": "prod-047",
+    "name": "Brinquedos Premium PupGrow - Produto 47",
+    "description": "Produto de alta qualidade para seu pet. Desenvolvido com ingredientes selecionados e tecnologia avançada para garantir o melhor para seu animal de estimação.",
+    "price": 389.9,
+    "compareAtPrice": 399.9,
+    "category": "Brinquedos",
+    "subcategory": "Brinquedos Diversos",
+    "brand": "PupGrow",
+    "images": [
+      "https://images.unsplash.com/photo-1589924692031?w=800"
+    ],
+    "specifications": {
+      "Qualidade": "Premium",
+      "Garantia": "90 dias"
+    },
+    "tags": [
+      "brinquedos",
+      "premium",
+      "pet"
+    ],
+    "stock": 230,
+    "sku": "PROD-047",
+    "weight": 1900,
+    "supplier": "PupGrow"
+  },
+  {
+    "id": "prod-048",
+    "name": "Acessórios Premium FelineChoice - Produto 48",
+    "description": "Produto de alta qualidade para seu pet. Desenvolvido com ingredientes selecionados e tecnologia avançada para garantir o melhor para seu animal de estimação.",
+    "price": 399.9,
+    "compareAtPrice": 409.9,
+    "category": "Acessórios",
+    "subcategory": "Acessórios Diversos",
+    "brand": "FelineChoice",
+    "images": [
+      "https://images.unsplash.com/photo-1589924692032?w=800"
+    ],
+    "specifications": {
+      "Qualidade": "Premium",
+      "Garantia": "90 dias"
+    },
+    "tags": [
+      "acessórios",
+      "premium",
+      "pet"
+    ],
+    "stock": 235,
+    "sku": "PROD-048",
+    "weight": 1950,
+    "supplier": "FelineChoice"
+  },
+  {
+    "id": "prod-049",
+    "name": "Higiene e Beleza Premium NutriPet - Produto 49",
+    "description": "Produto de alta qualidade para seu pet. Desenvolvido com ingredientes selecionados e tecnologia avançada para garantir o melhor para seu animal de estimação.",
+    "price": 409.9,
+    "compareAtPrice": 419.9,
+    "category": "Higiene e Beleza",
+    "subcategory": "Higiene e Beleza Diversos",
+    "brand": "NutriPet",
+    "images": [
+      "https://images.unsplash.com/photo-1589924692033?w=800"
+    ],
+    "specifications": {
+      "Qualidade": "Premium",
+      "Garantia": "90 dias"
+    },
+    "tags": [
+      "higiene e beleza",
+      "premium",
+      "pet"
+    ],
+    "stock": 240,
+    "sku": "PROD-049",
+    "weight": 2000,
+    "supplier": "NutriPet"
+  },
+  {
+    "id": "prod-050",
+    "name": "Saúde e Bem-Estar Premium PremiumPet - Produto 50",
+    "description": "Produto de alta qualidade para seu pet. Desenvolvido com ingredientes selecionados e tecnologia avançada para garantir o melhor para seu animal de estimação.",
+    "price": 419.9,
+    "compareAtPrice": 429.9,
+    "category": "Saúde e Bem-Estar",
+    "subcategory": "Saúde e Bem-Estar Diversos",
+    "brand": "PremiumPet",
+    "images": [
+      "https://images.unsplash.com/photo-1589924692034?w=800"
+    ],
+    "specifications": {
+      "Qualidade": "Premium",
+      "Garantia": "90 dias"
+    },
+    "tags": [
+      "saúde e bem-estar",
+      "premium",
+      "pet"
+    ],
+    "stock": 245,
+    "sku": "PROD-050",
+    "weight": 2050,
+    "supplier": "PremiumPet"
+  }
+]
