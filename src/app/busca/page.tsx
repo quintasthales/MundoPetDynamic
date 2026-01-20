@@ -17,16 +17,24 @@ function SearchResults() {
     setIsLoaded(true);
     
     if (query) {
-      const allProducts = getAllProducts();
-      const searchQuery = query.toLowerCase();
-      
-      const filtered = allProducts.filter(product => 
-        product.name.toLowerCase().includes(searchQuery) ||
-        product.description.toLowerCase().includes(searchQuery) ||
-        product.subcategory.toLowerCase().includes(searchQuery)
-      );
-      
-      setResults(filtered);
+      // Fetch from API
+      fetch(`/api/search?q=${encodeURIComponent(query)}`)
+        .then(res => res.json())
+        .then(data => {
+          setResults(data.results || []);
+        })
+        .catch(err => {
+          console.error('Erro ao buscar:', err);
+          // Fallback to local search
+          const allProducts = getAllProducts();
+          const searchQuery = query.toLowerCase();
+          const filtered = allProducts.filter(product => 
+            product.name.toLowerCase().includes(searchQuery) ||
+            product.description.toLowerCase().includes(searchQuery) ||
+            product.subcategory.toLowerCase().includes(searchQuery)
+          );
+          setResults(filtered);
+        });
     }
   }, [query]);
 
