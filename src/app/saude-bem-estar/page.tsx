@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { healthProducts, addToCart } from "@/lib/products";
+import { getAllProducts, addToCart } from "@/lib/products";
 import { useCart } from "@/components/CartProvider";
 
 export default function SaudeBemEstarPage() {
@@ -35,7 +35,7 @@ export default function SaudeBemEstarPage() {
   }, [notification.show]);
 
   const handleAddToCart = (productId: string) => {
-    const product = healthProducts.find(p => p.id === productId);
+    const product = getAllProducts().find(p => p.id === productId);
     if (product) {
       addToCart(product, 1);
       
@@ -131,7 +131,7 @@ export default function SaudeBemEstarPage() {
           <p className="section-subtitle">Produtos para criar um ambiente relaxante e harmonioso em sua casa.</p>
           
           <div className="products-grid">
-            {healthProducts
+            {getAllProducts()
               .filter(product => product.subcategory === 'aromaterapia')
               .map((product) => (
                 <div key={product.id} className="product-card">
@@ -165,7 +165,7 @@ export default function SaudeBemEstarPage() {
           <p className="section-subtitle">Acessórios para prática de yoga, meditação e exercícios leves em casa.</p>
           
           <div className="products-grid">
-            {healthProducts
+            {getAllProducts()
               .filter(product => product.subcategory === 'fitness')
               .map((product) => (
                 <div key={product.id} className="product-card">
@@ -199,7 +199,7 @@ export default function SaudeBemEstarPage() {
           <p className="section-subtitle">Produtos para auxiliar na prática da meditação e mindfulness.</p>
           
           <div className="products-grid">
-            {healthProducts
+            {getAllProducts()
               .filter(product => product.subcategory === 'meditacao')
               .map((product) => (
                 <div key={product.id} className="product-card">
@@ -233,7 +233,7 @@ export default function SaudeBemEstarPage() {
           <p className="section-subtitle">Acessórios ergonômicos para melhorar seu ambiente de trabalho.</p>
           
           <div className="products-grid">
-            {healthProducts
+            {getAllProducts()
               .filter(product => product.subcategory === 'home-office')
               .map((product) => (
                 <div key={product.id} className="product-card">

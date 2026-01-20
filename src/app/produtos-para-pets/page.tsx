@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { petProducts, addToCart } from "@/lib/products";
+import { getAllProducts, addToCart } from "@/lib/products";
 import { useCart } from "@/components/CartProvider";
 
 export default function ProdutosParaPetsPage() {
@@ -25,7 +25,7 @@ export default function ProdutosParaPetsPage() {
   }, [notification.show]);
 
   const handleAddToCart = (productId: string) => {
-    const product = petProducts.find(p => p.id === productId);
+    const product = getAllProducts().find(p => p.id === productId);
     if (product) {
       addToCart(product, 1);
       
@@ -121,7 +121,7 @@ export default function ProdutosParaPetsPage() {
           <p className="section-subtitle">Produtos cuidadosamente selecionados para o bem-estar e felicidade do seu pet.</p>
           
           <div className="products-grid">
-            {petProducts.map((product) => (
+            {getAllProducts().map((product) => (
               <div key={product.id} className="product-card">
                 <div className="product-image" style={{backgroundImage: `url('${product.images[0] || '/images/products/pet_brinquedo.jpg'}')`}}>
                   {product.featured && <span className="product-badge">Destaque</span>}

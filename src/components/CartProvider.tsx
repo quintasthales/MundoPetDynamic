@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
-import { loadCartFromStorage, Cart } from '@/lib/products';
+import { getCart, Cart } from '@/lib/products';
 
 // Criar contexto para o carrinho
 interface CartContextType {
@@ -26,7 +26,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   // Função para atualizar o carrinho usando useCallback para evitar re-criação
   const refreshCart = useCallback(() => {
-    const currentCart = loadCartFromStorage();
+    const currentCart = getCart();
     setCart(currentCart);
     
     // Calcular o número total de itens no carrinho
