@@ -1,7 +1,8 @@
 "use client";
 
-// Import Dropet products directly
+// Import Dropet products and wellness products
 import dropetProducts from '@/data/dropet-products.json';
+import wellnessProducts from '@/data/wellness-products.json';
 
 // Types matching Dropet product structure
 export interface Product {
@@ -53,9 +54,25 @@ const convertDropetProduct = (dropetProduct: any): Product => {
   };
 };
 
-// Get all products from Dropet
+// Convert wellness products to Product interface
+const convertWellnessProduct = (wellnessProduct: any): Product => {
+  return {
+    ...wellnessProduct,
+    priceWithPix: wellnessProduct.price * 0.95,
+    retailPrice: wellnessProduct.price,
+    sku: wellnessProduct.id.toUpperCase(),
+    supplier: 'Aromalife / YogaPro',
+    supplierUrl: 'https://www.aromalife.com.br',
+    rating: 4.7,
+    reviews: Math.floor(Math.random() * 80) + 20
+  };
+};
+
+// Get all products (Dropet + Wellness)
 export const getAllProducts = (): Product[] => {
-  return dropetProducts.map(convertDropetProduct);
+  const dropet = dropetProducts.map(convertDropetProduct);
+  const wellness = wellnessProducts.map(convertWellnessProduct);
+  return [...dropet, ...wellness];
 };
 
 // Get featured products (high stock items)
