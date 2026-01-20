@@ -1,19 +1,41 @@
 import { NextRequest, NextResponse } from 'next/server';
-import productsData from '@/data/products/products.json';
+import dropetProducts from '@/data/dropet-products.json';
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const category = searchParams.get('category');
+  const brand = searchParams.get('brand');
+  const minPrice = searchParams.get('minPrice');
+  const maxPrice = searchParams.get('maxPrice');
   const search = searchParams.get('search');
   const page = parseInt(searchParams.get('page') || '1');
   const limit = parseInt(searchParams.get('limit') || '12');
   
-  let filteredProducts = [...productsData];
+  let filteredProducts = [...dropetProducts];
   
   // Filter by category
   if (category && category !== 'all') {
     filteredProducts = filteredProducts.filter(
       p => p.category.toLowerCase() === category.toLowerCase()
+    );
+  }
+  
+  // Filter by brand
+  if (brand) {
+    filteredProducts = filteredProducts.filter(
+      p => p.brand?.toLowerCase() === brand.toLowerCase()
+    );
+  }
+  
+  // Filter by price range
+  if (minPrice) {
+    filteredProducts = filteredProducts.filter(
+      p => p.retailPrice >= parseFloat(minPrice)
+    );
+  }
+  if (maxPrice) {
+    filteredProducts = filteredProducts.filter(
+      p => p.retailPrice <= parseFloat(maxPrice)
     );
   }
   
@@ -23,7 +45,8 @@ export async function GET(request: NextRequest) {
     filteredProducts = filteredProducts.filter(
       p => p.name.toLowerCase().includes(searchLower) ||
            p.description.toLowerCase().includes(searchLower) ||
-           p.tags.some(tag => tag.toLowerCase().includes(searchLower))
+           p.tags.some(tag => tag.toLowerCase().includes(searchLower)) ||
+           p.brand?.toLowerCase().includes(searchLower)
     );
   }
   
@@ -40,5 +63,10 @@ export async function GET(request: NextRequest) {
       total: filteredProducts.length,
       totalPages: Math.ceil(filteredProducts.length / limit),
     },
+    stats: {
+      totalProducts: dropetProducts.length,
+      categories: [...new Set(dropetProducts.map(p => p.category))],
+      brands: [...new Set(dropetProducts.map(p => p.brand).filter(Boolean))],
+    }
   });
 }
